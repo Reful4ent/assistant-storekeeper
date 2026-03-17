@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 
 namespace assistant_storekeeper_backend
@@ -26,9 +27,16 @@ namespace assistant_storekeeper_backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+            string port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
+            string dbName = Environment.GetEnvironmentVariable("POSTGRES_DATABASE");
+            string user = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
+            string pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+            string connectionString = $"Host={host};Port={port};Database={dbName};Username={user};Password={pass}";
+
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
