@@ -98,6 +98,9 @@ namespace assistant_storekeeper_backend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MovementId", "NomenclatureId")
+                        .IsUnique();
+
                     b.ToTable("MovementNomenclatures");
                 });
 

@@ -16,6 +16,9 @@ namespace assistant_storekeeper_backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder) 
         {
             modelBuilder.HasPostgresEnum<MovementStatus>("public", "movement_status");
+            modelBuilder.Entity<MovementNomenclature>()
+                .HasIndex(mn => new { mn.MovementId, mn.NomenclatureId })
+                .IsUnique();
             base.OnModelCreating(modelBuilder);
         }
     }

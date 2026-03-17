@@ -10,7 +10,7 @@ using assistant_storekeeper_backend.Data;
 namespace assistant_storekeeper_backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260317165050_InitialCreate")]
+    [Migration("20260317170514_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -99,6 +99,9 @@ namespace assistant_storekeeper_backend.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MovementId", "NomenclatureId")
+                        .IsUnique();
 
                     b.ToTable("MovementNomenclatures");
                 });

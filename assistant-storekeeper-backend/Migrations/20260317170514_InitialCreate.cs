@@ -82,6 +82,12 @@ namespace assistant_storekeeper_backend.Migrations
                 {
                     table.PrimaryKey("PK_Nomenclatures", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovementNomenclatures_MovementId_NomenclatureId",
+                table: "MovementNomenclatures",
+                columns: new[] { "MovementId", "NomenclatureId" },
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
