@@ -15,6 +15,8 @@ using assistant_storekeeper_backend.Data;
 using assistant_storekeeper_backend.Repositories.CompanyWarehouses;
 using assistant_storekeeper_backend.Services.CompanyWarehouses;
 using assistant_storekeeper_backend.Middlewares;
+using assistant_storekeeper_backend.Repositories.Nomenclatures;
+using assistant_storekeeper_backend.Services.Nomenclatures;
 
 namespace assistant_storekeeper_backend
 {
@@ -39,6 +41,9 @@ namespace assistant_storekeeper_backend
 
             services.AddScoped<ICompanyWarehouseRepository, CompanyWarehouseRepository>();
             services.AddScoped<ICompanyWarehouseService, CompanyWarehouseService>();
+            services.AddScoped<INomenclatureRepository, NomenclatureRepository>();
+            services.AddScoped<INomenclatureService, NomenclatureService>();
+
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
