@@ -12,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
+using assistant_storekeeper_backend.Repositories.CompanyWarehouses;
+using assistant_storekeeper_backend.Services.CompanyWarehouses;
+using assistant_storekeeper_backend.Middlewares;
 
 namespace assistant_storekeeper_backend
 {
@@ -34,9 +37,12 @@ namespace assistant_storekeeper_backend
             string pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
             string connectionString = $"Host={host};Port={port};Database={dbName};Username={user};Password={pass}";
 
+            services.AddScoped<ICompanyWarehouseRepository, CompanyWarehouseRepository>();
+            services.AddScoped<ICompanyWarehouseService, CompanyWarehouseService>();
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +58,8 @@ namespace assistant_storekeeper_backend
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
