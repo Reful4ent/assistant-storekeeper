@@ -32,7 +32,7 @@ namespace assistant_storekeeper_backend.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -76,7 +76,7 @@ namespace assistant_storekeeper_backend.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -84,9 +84,21 @@ namespace assistant_storekeeper_backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_CompanyWarehouses_Name",
+                table: "CompanyWarehouses",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MovementNomenclatures_MovementId_NomenclatureId",
                 table: "MovementNomenclatures",
                 columns: new[] { "MovementId", "NomenclatureId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Nomenclatures_Name",
+                table: "Nomenclatures",
+                column: "Name",
                 unique: true);
         }
 
