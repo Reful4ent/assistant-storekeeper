@@ -45,10 +45,6 @@ namespace assistant_storekeeper_backend.Services.CompanyWarehouses
             }
 
             companyWarehouse.Name = companyWarehouse.Name.Trim();
-            if (companyWarehouse.Name.Length > 255)
-            {
-                throw new BadRequestException("Name cannot be longer than 255 characters");
-            }
             
             return await _companyWarehouseRepository.CreateCompanyWarehouse(companyWarehouse, cancellationToken);
         }
