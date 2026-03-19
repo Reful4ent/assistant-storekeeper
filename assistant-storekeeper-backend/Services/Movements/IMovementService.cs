@@ -16,9 +16,7 @@ namespace assistant_storekeeper_backend.Services.Movements
             string? sortBy,
             CancellationToken cancellationToken = default);
         Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default);
-        /*
         Task<Movement> UpdateMovement(int id, Movement movement, CancellationToken cancellationToken = default);
         Task DeleteMovement(int id, CancellationToken cancellationToken = default);
-        */
     }
 }
