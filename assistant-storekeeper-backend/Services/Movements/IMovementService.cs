@@ -1,0 +1,24 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using assistant_storekeeper_backend.Models;
+
+namespace assistant_storekeeper_backend.Services.Movements
+{
+    public interface IMovementService
+    {
+        Task<Movement?> GetMovementById(int id, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Movement>> GetAllMovements(
+            int? page,
+            int? pageSize,
+            string? search,
+            bool? isAscending,
+            string? sortBy,
+            CancellationToken cancellationToken = default);
+        Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default);
+        /*
+        Task<Movement> UpdateMovement(int id, Movement movement, CancellationToken cancellationToken = default);
+        Task DeleteMovement(int id, CancellationToken cancellationToken = default);
+        */
+    }
+}
