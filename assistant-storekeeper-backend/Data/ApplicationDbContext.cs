@@ -52,7 +52,7 @@ namespace assistant_storekeeper_backend.Data
             modelBuilder.Entity<Movement>()
                 .Property(c => c.Date)
                 .IsRequired();
-
+            // ToDO: Подумать над удалением связи при удалении склада
             modelBuilder.Entity<Movement>()
                 .HasOne(c => c.CompanyWarehouseFrom)
                 .WithMany()
@@ -82,6 +82,17 @@ namespace assistant_storekeeper_backend.Data
             modelBuilder.Entity<MovementNomenclature>()
                 .HasIndex(c => new { c.MovementId, c.NomenclatureId })
                 .IsUnique();
+            // ToDO: Подумать над удалением связи при удалении перемещения или номенклатуры
+            modelBuilder.Entity<MovementNomenclature>()
+                .HasOne(c => c.Movement)
+                .WithMany(c => c.MovementNomenclatures)
+                .HasForeignKey(c => c.MovementId)
+                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<MovementNomenclature>()
+                .HasOne(c => c.Nomenclature)
+                .WithMany(c => c.MovementNomenclatures)
+                .HasForeignKey(c => c.NomenclatureId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         private void ConfigureCompanyWarehouseNomenclature(ModelBuilder modelBuilder)
