@@ -52,6 +52,17 @@ namespace assistant_storekeeper_backend.Data
             modelBuilder.Entity<Movement>()
                 .Property(c => c.Date)
                 .IsRequired();
+
+            modelBuilder.Entity<Movement>()
+                .HasOne(c => c.CompanyWarehouseFrom)
+                .WithMany()
+                .HasForeignKey(c => c.CompanyWarehouseFromId)
+                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Movement>()
+                .HasOne(c => c.CompanyWarehouseTo)
+                .WithMany()
+                .HasForeignKey(c => c.CompanyWarehouseToId)
+                .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Movement>()
                 .Property(c => c.Status)
                 .IsRequired();

@@ -1,4 +1,5 @@
 using System;
+using assistant_storekeeper_backend.Models;
 
 namespace assistant_storekeeper_backend.Models
 {
@@ -7,6 +8,8 @@ namespace assistant_storekeeper_backend.Models
         public int Id { get; set; }
         public int? CompanyWarehouseFromId { get; set; }
         public int? CompanyWarehouseToId { get; set; }
+        public CompanyWarehouse? CompanyWarehouseFrom { get; set; }
+        public CompanyWarehouse? CompanyWarehouseTo { get; set; }
         public DateTime Date { get; set; }
         public MovementStatus Status { get; set; }
     }
