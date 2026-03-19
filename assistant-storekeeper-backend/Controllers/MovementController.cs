@@ -40,5 +40,19 @@ namespace assistant_storekeeper_backend.Controllers
             var newMovement = await _movementService.CreateMovement(movement);
             return CreatedAtAction(nameof(GetMovementById), new { id = newMovement.Id }, newMovement);
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateMovement(int id, [FromBody] Movement movement)
+        {
+            var updatedMovement = await _movementService.UpdateMovement(id, movement);
+            return Ok(updatedMovement);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteMovement(int id)
+        {
+            await _movementService.DeleteMovement(id);
+            return NoContent();
+        }
     }
 }

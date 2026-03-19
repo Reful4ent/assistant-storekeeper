@@ -19,6 +19,8 @@ using assistant_storekeeper_backend.Repositories.Nomenclatures;
 using assistant_storekeeper_backend.Services.Nomenclatures;
 using assistant_storekeeper_backend.Repositories.Movements;
 using assistant_storekeeper_backend.Services.Movements;
+using assistant_storekeeper_backend.Repositories.MovementNomenclatures;
+using assistant_storekeeper_backend.Services.MovementNomenclatures;
 
 namespace assistant_storekeeper_backend
 {
@@ -47,6 +49,8 @@ namespace assistant_storekeeper_backend
             services.AddScoped<INomenclatureService, NomenclatureService>();
             services.AddScoped<IMovementRepository, MovementRepository>();
             services.AddScoped<IMovementService, MovementService>();
+            services.AddScoped<IMovementNomenclatureRepository, MovementNomenclatureRepository>();
+            services.AddScoped<IMovementNomenclatureService, MovementNomenclatureService>();
 
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>

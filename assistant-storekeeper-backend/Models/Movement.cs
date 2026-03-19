@@ -1,5 +1,6 @@
 using System;
 using assistant_storekeeper_backend.Models;
+using System.Collections.Generic;
 
 namespace assistant_storekeeper_backend.Models
 {
@@ -12,5 +13,6 @@ namespace assistant_storekeeper_backend.Models
         public CompanyWarehouse? CompanyWarehouseTo { get; set; }
         public DateTime Date { get; set; }
         public MovementStatus Status { get; set; }
+        public List<MovementNomenclature> MovementNomenclatures { get; set; } = new List<MovementNomenclature>();
     }
 }

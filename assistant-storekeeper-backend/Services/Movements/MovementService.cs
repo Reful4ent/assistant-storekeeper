@@ -84,7 +84,7 @@ namespace assistant_storekeeper_backend.Services.Movements
             return await _movementRepository.CreateMovement(movement, cancellationToken);
         }
 
-        /*На данном этапе нет необходимости в обновлении перемещения, тк нет какой либо ролевки, а это один из главных документов
+        
         public async Task<Movement> UpdateMovement(int id, Movement movement, CancellationToken cancellationToken = default)
         {
             var existingMovement = await _movementRepository.GetMovementById(id, cancellationToken);
@@ -93,7 +93,7 @@ namespace assistant_storekeeper_backend.Services.Movements
             }
 
 
-                        if (movement.CompanyWarehouseFromId == null && movement.CompanyWarehouseToId == null) {
+            if (movement.CompanyWarehouseFromId == null && movement.CompanyWarehouseToId == null) {
                 throw new BadRequestException("Company warehouse from or to is required");
             }
 
@@ -128,7 +128,11 @@ namespace assistant_storekeeper_backend.Services.Movements
                 throw new BadRequestException("Status must be moving");
             }
 
-            return await _movementRepository.UpdateMovement(id, movement, cancellationToken);
+            existingMovement.CompanyWarehouseFromId = movement.CompanyWarehouseFromId;
+            existingMovement.CompanyWarehouseToId = movement.CompanyWarehouseToId;
+            existingMovement.Status = movement.Status;
+
+            return await _movementRepository.UpdateMovement(movement, cancellationToken);
         }
 
         public async Task DeleteMovement(int id, CancellationToken cancellationToken = default)
@@ -139,6 +143,5 @@ namespace assistant_storekeeper_backend.Services.Movements
             }
             await _movementRepository.DeleteMovement(existingMovement, cancellationToken);
         }
-        */
     }
 }
