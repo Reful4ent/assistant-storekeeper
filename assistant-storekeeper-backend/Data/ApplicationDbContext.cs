@@ -106,6 +106,17 @@ namespace assistant_storekeeper_backend.Data
             modelBuilder.Entity<CompanyWarehouseNomenclature>()
                 .Property(c => c.Quantity)
                 .IsRequired();
+            // ToDO: Подумать над удалением связи при удалении склада или номенклатуры
+            modelBuilder.Entity<CompanyWarehouseNomenclature>()
+                .HasOne(c => c.CompanyWarehouse)
+                .WithMany(c => c.CompanyWarehouseNomenclatures)
+                .HasForeignKey(c => c.CompanyWarehouseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CompanyWarehouseNomenclature>()
+                .HasOne(c => c.Nomenclature)
+                .WithMany(c => c.CompanyWarehouseNomenclatures)
+                .HasForeignKey(c => c.NomenclatureId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
