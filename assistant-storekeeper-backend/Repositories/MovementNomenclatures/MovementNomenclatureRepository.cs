@@ -1,3 +1,12 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using assistant_storekeeper_backend.Models;
+using Microsoft.EntityFrameworkCore;
+using assistant_storekeeper_backend.Data;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Linq;
+
 namespace assistant_storekeeper_backend.Repositories.MovementNomenclatures
 {
     public class MovementNomenclatureRepository : IMovementNomenclatureRepository
@@ -9,12 +18,18 @@ namespace assistant_storekeeper_backend.Repositories.MovementNomenclatures
             _context = context;
         }
 
+        public async Task<MovementNomenclature?> GetMovementNomenclatureById(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.MovementNomenclatures.FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+        }
+
         public async Task<IEnumerable<MovementNomenclature>> GetAllMovementNomenclatures(
+            int movementId,
             int? page = 1,
             int? pageSize = 10,
             string? search = null,
             bool? isAscending = true,
-            string? sortBy = "MovementName",
+            string? sortBy = "NomenclatureName",
             CancellationToken cancellationToken = default)
         {
             var query = _context.MovementNomenclatures
@@ -22,16 +37,18 @@ namespace assistant_storekeeper_backend.Repositories.MovementNomenclatures
                 .Include(m => m.Nomenclature)
                 .AsQueryable();
 
+            query = query.Where(m => m.MovementId == movementId);
+
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(m => m.Movement.Name.Contains(search));
+                query = query.Where(m => m.Nomenclature.Name.Contains(search));
             }
 
-            if (sortBy == "MovementName")
+            if (sortBy == "NomenclatureName")
             {
                 query = isAscending == true 
-                    ? query.OrderBy(m => m.Movement.Name) 
-                    : query.OrderByDescending(m => m.Movement.Name);
+                    ? query.OrderBy(m => m.Nomenclature.Name) 
+                    : query.OrderByDescending(m => m.Nomenclature.Name);
             }
             else if (sortBy == "Quantity")
             {

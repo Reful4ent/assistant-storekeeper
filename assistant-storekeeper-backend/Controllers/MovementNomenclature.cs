@@ -1,9 +1,15 @@
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using System.Threading;
+using assistant_storekeeper_backend.Services.MovementNomenclatures;
+using assistant_storekeeper_backend.Models;
+
 namespace assistant_storekeeper_backend.Controllers
 {
+    [ApiController]
+    [Route("api/movement-nomenclatures")]
     public class MovementNomenclatureController : ControllerBase
     {
-        [ApiController]
-        [Route("api/movement-nomenclatures")]
         private readonly IMovementNomenclatureService _movementNomenclatureService;
         public MovementNomenclatureController(IMovementNomenclatureService movementNomenclatureService)
         {
@@ -17,9 +23,10 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? search = null,
             [FromQuery] bool? isAscending = true,
             [FromQuery] string? sortBy = null,
+            [FromQuery] int movementId = 0,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await _movementNomenclatureService.GetAllMovementNomenclatures(page, pageSize, search, isAscending, sortBy, cancellationToken));
+            return Ok(await _movementNomenclatureService.GetAllMovementNomenclatures(movementId, page, pageSize, search, isAscending, sortBy, cancellationToken));
         }
 
         [HttpPut("{id}")]

@@ -87,12 +87,12 @@ namespace assistant_storekeeper_backend.Data
                 .HasOne(c => c.Movement)
                 .WithMany(c => c.MovementNomenclatures)
                 .HasForeignKey(c => c.MovementId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<MovementNomenclature>()
                 .HasOne(c => c.Nomenclature)
                 .WithMany(c => c.MovementNomenclatures)
                 .HasForeignKey(c => c.NomenclatureId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         private void ConfigureCompanyWarehouseNomenclature(ModelBuilder modelBuilder)
