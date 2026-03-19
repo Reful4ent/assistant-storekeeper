@@ -37,6 +37,17 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
             }
             return companyWarehouseNomenclature;
         }
+
+        public async Task<CompanyWarehouseNomenclature?> GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+            int companyWarehouseId,
+            int nomenclatureId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _companyWareHouseNomenclatureRepository.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                companyWarehouseId, 
+                nomenclatureId, 
+                cancellationToken);
+        }
         
         public async Task<IEnumerable<CompanyWarehouseNomenclature>> GetAllCompanyWarehouseNomenclatures(
             int companyWarehouseId, 

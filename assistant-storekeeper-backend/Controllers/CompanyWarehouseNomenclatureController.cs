@@ -29,20 +29,5 @@ namespace assistant_storekeeper_backend.Controllers
         {
             return Ok(await _companyWareHouseNomenclatureService.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken));
         }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> CreateCompanyWarehouseNomenclature(
-            [FromBody] CompanyWarehouseNomenclature companyWarehouseNomenclature,
-            CancellationToken cancellationToken = default)
-        {
-            return Ok(await _companyWareHouseNomenclatureService.CreateCompanyWarehouseNomenclature(companyWarehouseNomenclature, cancellationToken));
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCompanyWarehouseNomenclature(int id, CancellationToken cancellationToken = default)
-        {
-            await _companyWareHouseNomenclatureService.DeleteCompanyWarehouseNomenclature(id, cancellationToken);
-            return NoContent();
-        }
     }
 }
