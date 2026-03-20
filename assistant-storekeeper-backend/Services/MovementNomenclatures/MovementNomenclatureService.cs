@@ -6,22 +6,24 @@ using assistant_storekeeper_backend.Repositories.MovementNomenclatures;
 using assistant_storekeeper_backend.Exceptions;
 using assistant_storekeeper_backend.Services.Movements;
 using assistant_storekeeper_backend.Services.Nomenclatures;
+using assistant_storekeeper_backend.Repositories.Movements;
+
 
 namespace assistant_storekeeper_backend.Services.MovementNomenclatures
 {
     public class MovementNomenclatureService : IMovementNomenclatureService
     {
         private readonly IMovementNomenclatureRepository _movementNomenclatureRepository;
-        private readonly IMovementService _movementService;
+        private readonly IMovementRepository _movementRepository;
         private readonly INomenclatureService _nomenclatureService;
 
         public MovementNomenclatureService(
             IMovementNomenclatureRepository movementNomenclatureRepository,
-            IMovementService movementService,
+            IMovementRepository movementRepository,
             INomenclatureService nomenclatureService)
         {
             _movementNomenclatureRepository = movementNomenclatureRepository;
-            _movementService = movementService;
+            _movementRepository = movementRepository;
             _nomenclatureService = nomenclatureService;
         }
 
@@ -83,7 +85,11 @@ namespace assistant_storekeeper_backend.Services.MovementNomenclatures
             }
             else
             {
-                await _movementService.GetMovementById(id, cancellationToken);
+                var movement = await _movementRepository.GetMovementById(id, cancellationToken);
+                if (movement == null)
+                {
+                    throw new NotFoundException("Movement not found");
+                }
             }
         }
 

@@ -57,12 +57,12 @@ namespace assistant_storekeeper_backend.Data
                 .HasOne(c => c.CompanyWarehouseFrom)
                 .WithMany()
                 .HasForeignKey(c => c.CompanyWarehouseFromId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Movement>()
                 .HasOne(c => c.CompanyWarehouseTo)
                 .WithMany()
                 .HasForeignKey(c => c.CompanyWarehouseToId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Movement>()
                 .Property(c => c.Status)
                 .IsRequired();
@@ -87,12 +87,12 @@ namespace assistant_storekeeper_backend.Data
                 .HasOne(c => c.Movement)
                 .WithMany(c => c.MovementNomenclatures)
                 .HasForeignKey(c => c.MovementId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<MovementNomenclature>()
                 .HasOne(c => c.Nomenclature)
                 .WithMany(c => c.MovementNomenclatures)
                 .HasForeignKey(c => c.NomenclatureId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         private void ConfigureCompanyWarehouseNomenclature(ModelBuilder modelBuilder)
@@ -111,12 +111,12 @@ namespace assistant_storekeeper_backend.Data
                 .HasOne(c => c.CompanyWarehouse)
                 .WithMany(c => c.CompanyWarehouseNomenclatures)
                 .HasForeignKey(c => c.CompanyWarehouseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<CompanyWarehouseNomenclature>()
                 .HasOne(c => c.Nomenclature)
                 .WithMany(c => c.CompanyWarehouseNomenclatures)
                 .HasForeignKey(c => c.NomenclatureId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

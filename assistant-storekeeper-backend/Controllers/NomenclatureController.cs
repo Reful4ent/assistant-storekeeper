@@ -45,7 +45,7 @@ namespace assistant_storekeeper_backend.Controllers
             var createdNomenclature = await _nomenclatureService.CreateNomenclature(nomenclature);
             return CreatedAtAction(nameof(GetNomenclatureById), new { id = createdNomenclature.Id }, _mapper.Map<NomenclatureDTO>(createdNomenclature));
         }
-
+        
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateNomenclature(int id, [FromBody] Nomenclature nomenclature)
         {
