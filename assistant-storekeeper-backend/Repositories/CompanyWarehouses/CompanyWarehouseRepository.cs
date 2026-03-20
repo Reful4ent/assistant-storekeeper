@@ -20,7 +20,10 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
 
         public async Task<CompanyWarehouse?> GetCompanyWarehouseById(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.CompanyWarehouses.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+            return await _context.CompanyWarehouses
+                .Include(c => c.CompanyWarehouseNomenclatures)
+                .ThenInclude(c => c.Nomenclature)
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
         public async Task<IEnumerable<CompanyWarehouse>> GetAllCompanyWarehouses(
@@ -31,7 +34,10 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
             string? sortBy = "Id",
             CancellationToken cancellationToken = default)
         {
-            var query = _context.CompanyWarehouses.AsQueryable();
+            var query = _context.CompanyWarehouses
+                .Include(c => c.CompanyWarehouseNomenclatures)
+                .ThenInclude(c => c.Nomenclature)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {

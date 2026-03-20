@@ -25,6 +25,16 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatur
             return await _context.CompanyWarehouseNomenclatures.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
+        public async Task<CompanyWarehouseNomenclature?> GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+            int companyWarehouseId,
+            int nomenclatureId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.CompanyWarehouseNomenclatures.FirstOrDefaultAsync(
+                c => c.CompanyWarehouseId == companyWarehouseId && c.NomenclatureId == nomenclatureId, 
+                cancellationToken);
+        }
+
         public async Task<IEnumerable<CompanyWarehouseNomenclature>> GetAllCompanyWarehouseNomenclatures(
             int companyWarehouseId, 
             int? page = 1, 

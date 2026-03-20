@@ -2,6 +2,10 @@ using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
 using assistant_storekeeper_backend.Services.CompanyWarehouses;
 using Microsoft.AspNetCore.Mvc;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseDTOs;
+using AutoMapper;
+using assistant_storekeeper_backend.Mappers;
+using System.Collections.Generic;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -10,16 +14,18 @@ namespace assistant_storekeeper_backend.Controllers
     public class CompanyWarehouseController : ControllerBase
     {
         private readonly ICompanyWarehouseService _companyWarehouseService;
-        public CompanyWarehouseController(ICompanyWarehouseService companyWarehouseService)
+        private readonly IMapper _mapper;
+        public CompanyWarehouseController(ICompanyWarehouseService companyWarehouseService, IMapper mapper)
         {
             _companyWarehouseService = companyWarehouseService;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCompanyWarehouseById(int id)
         {
             var companyWarehouse = await _companyWarehouseService.GetCompanyWarehouseById(id);
-            return Ok(companyWarehouse);
+            return Ok(_mapper.Map<CompanyWarehouseDTO>(companyWarehouse));
         }
 
         [HttpGet]
@@ -31,21 +37,21 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy)
         {
             var companyWarehouses = await _companyWarehouseService.GetAllCompanyWarehouses(page, pageSize, search, isAscending, sortBy);
-            return Ok(companyWarehouses);
+            return Ok(_mapper.Map<IEnumerable<CompanyWarehouseDTO>>(companyWarehouses));
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateCompanyWarehouse([FromBody] CompanyWarehouse companyWarehouse)
         {
             var createdCompanyWarehouse = await _companyWarehouseService.CreateCompanyWarehouse(companyWarehouse);
-            return CreatedAtAction(nameof(GetCompanyWarehouseById), new { id = createdCompanyWarehouse.Id }, createdCompanyWarehouse);
+            return CreatedAtAction(nameof(GetCompanyWarehouseById), new { id = createdCompanyWarehouse.Id }, _mapper.Map<CompanyWarehouseDTO>(createdCompanyWarehouse));
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateCompanyWarehouse(int id, [FromBody] CompanyWarehouse companyWarehouse)
         {
             var updatedCompanyWarehouse = await _companyWarehouseService.UpdateCompanyWarehouse(id, companyWarehouse);
-            return Ok(updatedCompanyWarehouse);
+            return Ok(_mapper.Map<CompanyWarehouseDTO>(updatedCompanyWarehouse));
         }
 
         [HttpDelete("{id:int}")]

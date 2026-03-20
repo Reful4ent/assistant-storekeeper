@@ -10,6 +10,10 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatur
         Task<CompanyWarehouseNomenclature?> GetCompanyWarehouseNomenclatureById(
             int id, 
             CancellationToken cancellationToken = default);
+        Task<CompanyWarehouseNomenclature?> GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+            int companyWarehouseId,
+            int nomenclatureId,
+            CancellationToken cancellationToken = default);
         Task<IEnumerable<CompanyWarehouseNomenclature>> GetAllCompanyWarehouseNomenclatures(
             int companyWarehouseId,
             int? page = 1,

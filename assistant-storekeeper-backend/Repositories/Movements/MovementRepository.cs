@@ -22,6 +22,8 @@ namespace assistant_storekeeper_backend.Repositories.Movements
             return await _context.Movements
                 .Include(m => m.CompanyWarehouseFrom)
                 .Include(m => m.CompanyWarehouseTo)
+                .Include(m => m.MovementNomenclatures)
+                .ThenInclude(mn => mn.Nomenclature)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
@@ -36,6 +38,8 @@ namespace assistant_storekeeper_backend.Repositories.Movements
             var query = _context.Movements
                 .Include(m => m.CompanyWarehouseFrom)
                 .Include(m => m.CompanyWarehouseTo)
+                .Include(m => m.MovementNomenclatures)
+                .ThenInclude(mn => mn.Nomenclature)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))

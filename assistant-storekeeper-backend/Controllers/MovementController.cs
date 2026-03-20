@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using assistant_storekeeper_backend.Services.Movements;
 using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
+using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using AutoMapper;
+using System.Collections.Generic;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -10,16 +13,18 @@ namespace assistant_storekeeper_backend.Controllers
     public class MovementController : ControllerBase
     {
         private readonly IMovementService _movementService;
-        public MovementController(IMovementService movementService)
-        {
+        private readonly IMapper _mapper;
+        public MovementController(IMovementService movementService, IMapper mapper)
+        {   
             _movementService = movementService;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetMovementById(int id)
         {
             var movement = await _movementService.GetMovementById(id);
-            return Ok(movement);
+            return Ok(_mapper.Map<MovementResponseDTO>(movement));
         }
 
         [HttpGet]
@@ -31,21 +36,21 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy)
         {
             var movements = await _movementService.GetAllMovements(page, pageSize, search, isAscending, sortBy);
-            return Ok(movements);
+            return Ok(_mapper.Map<List<MovementResponseDTO>>(movements));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMovement([FromBody] Movement movement)
+        public async Task<IActionResult> CreateMovement([FromBody] MovementDTO movementDTO)
         {
-            var newMovement = await _movementService.CreateMovement(movement);
-            return CreatedAtAction(nameof(GetMovementById), new { id = newMovement.Id }, newMovement);
+            var newMovement = await _movementService.CreateMovement(movementDTO);
+            return CreatedAtAction(nameof(GetMovementById), new { id = newMovement.Id }, _mapper.Map<MovementResponseDTO>(newMovement));
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateMovement(int id, [FromBody] Movement movement)
+        public async Task<IActionResult> UpdateMovement(int id, [FromBody] MovementDTO movementDTO)
         {
-            var updatedMovement = await _movementService.UpdateMovement(id, movement);
-            return Ok(updatedMovement);
+            var updatedMovement = await _movementService.UpdateMovement(id, movementDTO);
+            return Ok(_mapper.Map<MovementResponseDTO>(updatedMovement));
         }
 
         [HttpDelete("{id:int}")]

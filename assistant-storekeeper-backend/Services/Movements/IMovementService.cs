@@ -2,6 +2,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
+using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures;
+using assistant_storekeeper_backend.Services.MovementNomenclatures;
+using assistant_storekeeper_backend.DTOS.MovementDTOs;
 
 namespace assistant_storekeeper_backend.Services.Movements
 {
@@ -15,8 +19,8 @@ namespace assistant_storekeeper_backend.Services.Movements
             bool? isAscending,
             string? sortBy,
             CancellationToken cancellationToken = default);
-        Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default);
-        Task<Movement> UpdateMovement(int id, Movement movement, CancellationToken cancellationToken = default);
+        Task<Movement> CreateMovement(MovementDTO movementDTO, CancellationToken cancellationToken = default);
+        Task<Movement> UpdateMovement(int id, MovementDTO movementDTO, CancellationToken cancellationToken = default);
         Task DeleteMovement(int id, CancellationToken cancellationToken = default);
     }
 }
