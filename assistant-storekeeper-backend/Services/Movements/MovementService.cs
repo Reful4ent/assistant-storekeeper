@@ -177,56 +177,60 @@ namespace assistant_storekeeper_backend.Services.Movements
             return await _movementRepository.GetMovementById(movement.Id, cancellationToken);
         }
 
-        
-        public async Task<Movement> UpdateMovement(int id, MovementDTO movementDTO, CancellationToken cancellationToken = default)
-        {
-            var existingMovement = await _movementRepository.GetMovementById(id, cancellationToken);
-            if (existingMovement == null) {
-                throw new NotFoundException("Movement not found");
-            }
-
-
-            if (movementDTO.CompanyWarehouseFromId == null && movementDTO.CompanyWarehouseToId == null) {
-                throw new BadRequestException("Company warehouse from or to is required");
-            }
-
-            if (movementDTO.CompanyWarehouseFromId != null) {
-                await _companyWarehouseService.GetCompanyWarehouseById(movementDTO.CompanyWarehouseFromId.Value, cancellationToken);
-            }
-
-            if (movementDTO.CompanyWarehouseToId != null) {
-                await _companyWarehouseService.GetCompanyWarehouseById(movementDTO.CompanyWarehouseToId.Value, cancellationToken);
-            }
-
-            // Если со склада (from) ушло не на наш склад а в другое место, то статус должен быть расход (сonsumption)
-            if (movementDTO.CompanyWarehouseFromId != null && movementDTO.CompanyWarehouseToId == null && movementDTO.Status != MovementStatus.Consumption) {
-                throw new BadRequestException("Status must be consumption");
-            }
-
-            // Если на склад (to) пришло не с другого склада а из другого места, то статус должен быть приход (coming)
-            if (movementDTO.CompanyWarehouseFromId == null && movementDTO.CompanyWarehouseToId != null && movementDTO.Status != MovementStatus.Coming) {
-                throw new BadRequestException("Status must be coming");
-            }
-
-            // Если перемещаем со склада на склад то перемещение (moving)  
-            if (movementDTO.CompanyWarehouseFromId != null && movementDTO.CompanyWarehouseToId != null && movementDTO.Status != MovementStatus.Moving) {
-                throw new BadRequestException("Status must be moving");
-            }
-
-            existingMovement.CompanyWarehouseFromId = movementDTO.CompanyWarehouseFromId;
-            existingMovement.CompanyWarehouseToId = movementDTO.CompanyWarehouseToId;
-            existingMovement.Status = movementDTO.Status;
-            
-
-
-            return await _movementRepository.UpdateMovement(existingMovement, cancellationToken);
-        }
 
         public async Task DeleteMovement(int id, CancellationToken cancellationToken = default)
         {
             var existingMovement = await _movementRepository.GetMovementById(id, cancellationToken);
             if (existingMovement == null) {
                 throw new NotFoundException("Movement not found");
+            }
+            var existingMovementNomenclatures = await _movementNomenclatureService.GetAllMovementNomenclatures(existingMovement.Id, null, null, null, null, null, cancellationToken);
+            foreach (var nomenclature in existingMovementNomenclatures) {
+                switch (existingMovement.Status) {
+                    case MovementStatus.Moving:
+                        var companyWarehouseNomenclatureFromMoving = await _companyWareHouseNomenclatureService.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                            existingMovement.CompanyWarehouseFromId.Value, 
+                            nomenclature.NomenclatureId, 
+                            cancellationToken);
+                        var companyWarehouseNomenclatureToMoving = await _companyWareHouseNomenclatureService.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                            existingMovement.CompanyWarehouseToId.Value, 
+                            nomenclature.NomenclatureId, 
+                            cancellationToken);
+                        if (companyWarehouseNomenclatureFromMoving == null) {
+                            throw new NotFoundException("Company warehouse nomenclature from not found");
+                        }
+                        if (companyWarehouseNomenclatureToMoving == null) {
+                            throw new NotFoundException("Company warehouse nomenclature to not found");
+                        }
+                        companyWarehouseNomenclatureFromMoving.Quantity += nomenclature.Quantity;
+                        await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureFromMoving.Id, companyWarehouseNomenclatureFromMoving, cancellationToken);
+                        companyWarehouseNomenclatureToMoving.Quantity -= nomenclature.Quantity;
+                        await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureToMoving.Id, companyWarehouseNomenclatureToMoving, cancellationToken);
+                        break;
+                    case MovementStatus.Consumption:
+                        var companyWarehouseNomenclatureConsumption = await _companyWareHouseNomenclatureService.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                            existingMovement.CompanyWarehouseFromId.Value, 
+                            nomenclature.NomenclatureId, 
+                            cancellationToken);
+                        if (companyWarehouseNomenclatureConsumption == null) {
+                            throw new NotFoundException("Company warehouse nomenclature not found");
+                        }
+                        companyWarehouseNomenclatureConsumption.Quantity += nomenclature.Quantity;
+                        await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureConsumption.Id, companyWarehouseNomenclatureConsumption, cancellationToken);
+                        break;
+                    case MovementStatus.Coming:
+                        var companyWarehouseNomenclatureComing = await _companyWareHouseNomenclatureService.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                            existingMovement.CompanyWarehouseToId.Value, 
+                            nomenclature.NomenclatureId, 
+                            cancellationToken);
+                        if (companyWarehouseNomenclatureComing == null) {
+                            throw new NotFoundException("Company warehouse nomenclature not found");
+                        }
+                        companyWarehouseNomenclatureComing.Quantity -= nomenclature.Quantity;
+                        await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureComing.Id, companyWarehouseNomenclatureComing, cancellationToken);
+                        break;
+                }
+                await _movementNomenclatureService.DeleteMovementNomenclature(nomenclature.Id, cancellationToken);
             }
             await _movementRepository.DeleteMovement(existingMovement, cancellationToken);
         }

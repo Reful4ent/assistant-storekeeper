@@ -29,6 +29,7 @@ namespace assistant_storekeeper_backend.Controllers
             return Ok(await _movementNomenclatureService.GetAllMovementNomenclatures(movementId, page, pageSize, search, isAscending, sortBy, cancellationToken));
         }
 
+        /*
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMovementNomenclature(int id,[FromBody] MovementNomenclature movementNomenclature, CancellationToken cancellationToken = default)
         {
@@ -40,6 +41,6 @@ namespace assistant_storekeeper_backend.Controllers
         {
             await _movementNomenclatureService.DeleteMovementNomenclature(id, cancellationToken);
             return NoContent();
-        }
+        }*/
     }
 }
