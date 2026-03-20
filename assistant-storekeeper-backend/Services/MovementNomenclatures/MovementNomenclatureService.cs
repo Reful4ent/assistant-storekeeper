@@ -3,25 +3,26 @@ using System.Threading;
 using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
 using assistant_storekeeper_backend.Repositories.MovementNomenclatures;
-using assistant_storekeeper_backend.Repositories.Movements;
-using assistant_storekeeper_backend.Repositories.Nomenclatures;
 using assistant_storekeeper_backend.Exceptions;
+using assistant_storekeeper_backend.Services.Movements;
+using assistant_storekeeper_backend.Services.Nomenclatures;
 
 namespace assistant_storekeeper_backend.Services.MovementNomenclatures
 {
     public class MovementNomenclatureService : IMovementNomenclatureService
     {
         private readonly IMovementNomenclatureRepository _movementNomenclatureRepository;
-        private readonly IMovementRepository _movementRepository;
-        private readonly INomenclatureRepository _nomenclatureRepository;
+        private readonly IMovementService _movementService;
+        private readonly INomenclatureService _nomenclatureService;
+
         public MovementNomenclatureService(
             IMovementNomenclatureRepository movementNomenclatureRepository,
-            IMovementRepository movementRepository,
-            INomenclatureRepository nomenclatureRepository)
+            IMovementService movementService,
+            INomenclatureService nomenclatureService)
         {
             _movementNomenclatureRepository = movementNomenclatureRepository;
-            _movementRepository = movementRepository;
-            _nomenclatureRepository = nomenclatureRepository;
+            _movementService = movementService;
+            _nomenclatureService = nomenclatureService;
         }
 
         public async Task<IEnumerable<MovementNomenclature>> GetAllMovementNomenclatures(
@@ -33,53 +34,15 @@ namespace assistant_storekeeper_backend.Services.MovementNomenclatures
             string? sortBy = null,
             CancellationToken cancellationToken = default)
         {
-            if (movementId <= 0)
-            {
-                throw new BadRequestException("Movement is required");
-            }
-            else
-            {
-                var movement = await _movementRepository.GetMovementById(movementId, cancellationToken);
-                if (movement == null)
-                {
-                    throw new NotFoundException("Movement not found");
-                }
-            }
+            await ValidateMovement(movementId, cancellationToken);
             return await _movementNomenclatureRepository.GetAllMovementNomenclatures(movementId, page, pageSize, search, isAscending, sortBy, cancellationToken);
         }
 
         public async Task<MovementNomenclature> CreateMovementNomenclature(MovementNomenclature movementNomenclature, CancellationToken cancellationToken = default)
         {
-            if (movementNomenclature.MovementId <= 0)
-            {
-                throw new BadRequestException("Movement is required");
-            }
-            else
-            {
-                var movement = await _movementRepository.GetMovementById(movementNomenclature.MovementId, cancellationToken);
-                if (movement == null)
-                {
-                    throw new NotFoundException("Movement not found");
-                }
-            }
-
-            if (movementNomenclature.NomenclatureId <= 0)
-            {
-                throw new BadRequestException("Nomenclature is required");
-            }
-            else
-            {
-                var nomenclature = await _nomenclatureRepository.GetNomenclatureById(movementNomenclature.NomenclatureId, cancellationToken);
-                if (nomenclature == null)
-                {
-                    throw new NotFoundException("Nomenclature not found");
-                }
-            }
-
-            if (movementNomenclature.Quantity <= 0)
-            {
-                throw new BadRequestException("Quantity must be greater than 0");
-            }
+            await ValidateMovement(movementNomenclature.MovementId, cancellationToken);
+            await ValidateNomenclature(movementNomenclature.NomenclatureId, cancellationToken);
+            await ValidateQuantity(movementNomenclature.Quantity, cancellationToken);
 
             return await _movementNomenclatureRepository.CreateMovementNomenclature(movementNomenclature, cancellationToken);
         }
@@ -91,37 +54,9 @@ namespace assistant_storekeeper_backend.Services.MovementNomenclatures
             {
                 throw new NotFoundException("Movement nomenclature not found");
             }
-
-            if (movementNomenclature.MovementId <= 0)
-            {
-                throw new BadRequestException("Movement is required");
-            }
-            else
-            {
-                var movement = await _movementRepository.GetMovementById(movementNomenclature.MovementId, cancellationToken);
-                if (movement == null)
-                {
-                    throw new NotFoundException("Movement not found");
-                }
-            }
-
-            if (movementNomenclature.NomenclatureId <= 0)
-            {
-                throw new BadRequestException("Nomenclature is required");
-            }
-            else
-            {
-                var nomenclature = await _nomenclatureRepository.GetNomenclatureById(movementNomenclature.NomenclatureId, cancellationToken);
-                if (nomenclature == null)
-                {
-                    throw new NotFoundException("Nomenclature not found");
-                }
-            }
-
-            if (movementNomenclature.Quantity <= 0)
-            {
-                throw new BadRequestException("Quantity must be greater than 0");
-            }
+            await ValidateMovement(movementNomenclature.MovementId, cancellationToken);
+            await ValidateNomenclature(movementNomenclature.NomenclatureId, cancellationToken);
+            await ValidateQuantity(movementNomenclature.Quantity, cancellationToken);
 
             existingMovementNomenclature.MovementId = movementNomenclature.MovementId;
             existingMovementNomenclature.NomenclatureId = movementNomenclature.NomenclatureId;
@@ -138,6 +73,38 @@ namespace assistant_storekeeper_backend.Services.MovementNomenclatures
                 throw new NotFoundException("Movement nomenclature not found");
             }
             await _movementNomenclatureRepository.DeleteMovementNomenclature(movementNomenclature, cancellationToken);
+        }
+
+        private async Task ValidateMovement(int id, CancellationToken cancellationToken = default)
+        {
+            if (id <= 0)
+            {
+                throw new BadRequestException("Id is required");
+            }
+            else
+            {
+                await _movementService.GetMovementById(id, cancellationToken);
+            }
+        }
+
+        private async Task ValidateNomenclature(int id, CancellationToken cancellationToken = default)
+        {
+            if (id <= 0)
+            {
+                throw new BadRequestException("Id is required");
+            }
+            else
+            {
+                await _nomenclatureService.GetNomenclatureById(id, cancellationToken);
+            }
+        }
+
+        private async Task ValidateQuantity(int Quantity, CancellationToken cancellationToken = default) 
+        {
+            if (Quantity <= 0)
+            {
+                throw new BadRequestException("Quantity must be greater than 0");
+            }
         }
     }
 }
