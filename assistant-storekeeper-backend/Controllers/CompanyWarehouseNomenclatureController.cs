@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Threading;
 using assistant_storekeeper_backend.Models;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureDTOs;
+using AutoMapper;
+using assistant_storekeeper_backend.Mappers;
+using System.Collections.Generic;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -11,10 +15,11 @@ namespace assistant_storekeeper_backend.Controllers
     public class CompanyWarehouseNomenclatureController : ControllerBase
     {
         private readonly ICompanyWareHouseNomenclatureService _companyWareHouseNomenclatureService;
-
-        public CompanyWarehouseNomenclatureController(ICompanyWareHouseNomenclatureService companyWareHouseNomenclatureService)
+        private readonly IMapper _mapper;
+        public CompanyWarehouseNomenclatureController(ICompanyWareHouseNomenclatureService companyWareHouseNomenclatureService, IMapper mapper)
         {
             _companyWareHouseNomenclatureService = companyWareHouseNomenclatureService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -27,7 +32,7 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy = null,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await _companyWareHouseNomenclatureService.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken));
+            return Ok(_mapper.Map<IEnumerable<CompanyWarehouseNomenclatureDTO>>(await _companyWareHouseNomenclatureService.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken)));
         }
     }
 }

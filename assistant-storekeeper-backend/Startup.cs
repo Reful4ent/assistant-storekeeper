@@ -26,6 +26,7 @@ using assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures;
 using assistant_storekeeper_backend.Mappers;
 using AutoMapper;
 using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureDTOs;
 
 
 namespace assistant_storekeeper_backend
@@ -53,7 +54,8 @@ namespace assistant_storekeeper_backend
                 (cfg) => { }, 
                 typeof(NomenclatureMapper), 
                 typeof(MovementNomenclatureMapper),
-                typeof(MovementMapper));
+                typeof(MovementMapper),
+                typeof(CompanyWarehouseNomenclatureMapper));
 
 
             services.AddScoped<ICompanyWarehouseRepository, CompanyWarehouseRepository>();
