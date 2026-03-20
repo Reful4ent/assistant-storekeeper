@@ -6,6 +6,7 @@ using assistant_storekeeper_backend.DTOS.MovementDTOs;
 using assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures;
 using assistant_storekeeper_backend.Services.MovementNomenclatures;
 using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.DTOS.WarehouseStateRequestDTOs;
 
 namespace assistant_storekeeper_backend.Services.Movements
 {
@@ -21,5 +22,6 @@ namespace assistant_storekeeper_backend.Services.Movements
             CancellationToken cancellationToken = default);
         Task<Movement> CreateMovement(MovementDTO movementDTO, CancellationToken cancellationToken = default);
         Task DeleteMovement(int id, CancellationToken cancellationToken = default);
+        Task<WarehouseStateResponseDTO> GetMovementsByDate(WarehouseStateRequestDTO warehouseStateRequestDTO, CancellationToken cancellationToken = default);
     }
 }

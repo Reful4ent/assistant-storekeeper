@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Threading;
 using assistant_storekeeper_backend.Models;
+using AutoMapper;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureDTOs;
+using System.Collections.Generic;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -11,10 +14,12 @@ namespace assistant_storekeeper_backend.Controllers
     public class CompanyWarehouseNomenclatureController : ControllerBase
     {
         private readonly ICompanyWareHouseNomenclatureService _companyWareHouseNomenclatureService;
+        private readonly IMapper _mapper;
 
-        public CompanyWarehouseNomenclatureController(ICompanyWareHouseNomenclatureService companyWareHouseNomenclatureService)
+        public CompanyWarehouseNomenclatureController(ICompanyWareHouseNomenclatureService companyWareHouseNomenclatureService, IMapper mapper)
         {
             _companyWareHouseNomenclatureService = companyWareHouseNomenclatureService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -27,18 +32,21 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy = null,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await _companyWareHouseNomenclatureService.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken));
+            var companyWarehouseNomenclatures = await _companyWareHouseNomenclatureService.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken);
+            return Ok(_mapper.Map<List<CompanyWarehouseNomenclatureDTO>>(companyWarehouseNomenclatures));
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> CreateCompanyWarehouseNomenclature(
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateCompanyWarehouseNomenclature(
+            int id,
             [FromBody] CompanyWarehouseNomenclature companyWarehouseNomenclature,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await _companyWareHouseNomenclatureService.CreateCompanyWarehouseNomenclature(companyWarehouseNomenclature, cancellationToken));
+            var updatedCompanyWarehouseNomenclature = await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(id, companyWarehouseNomenclature, cancellationToken);
+            return Ok(_mapper.Map<CompanyWarehouseNomenclatureDTO>(updatedCompanyWarehouseNomenclature));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteCompanyWarehouseNomenclature(int id, CancellationToken cancellationToken = default)
         {
             await _companyWareHouseNomenclatureService.DeleteCompanyWarehouseNomenclature(id, cancellationToken);

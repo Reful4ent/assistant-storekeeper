@@ -107,9 +107,9 @@ namespace assistant_storekeeper_backend.Services.MovementNomenclatures
 
         private async Task ValidateQuantity(int Quantity, CancellationToken cancellationToken = default) 
         {
-            if (Quantity <= 0)
+            if (Quantity < 0)
             {
-                throw new BadRequestException("Quantity must be greater than 0");
+                throw new BadRequestException("Quantity must be greater than or equal to 0");
             }
         }
     }

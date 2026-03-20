@@ -51,6 +51,18 @@ namespace assistant_storekeeper_backend.Middlewares
                         context.Response.StatusCode = 409;
                         await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = "Unique constraint violation" }));
                     }
+                    else if (pg.SqlState == "23503")
+                    {
+                        context.Response.StatusCode = 400;
+                        var message = pg.TableName switch
+                        {
+                            "CompanyWarehouseNomenclatures" => "Cannot delete: nomenclature is used in warehouse stocks. Remove from warehouses first.",
+                            "MovementNomenclatures" => "Cannot delete: nomenclature is used in movements.",
+                            "Nomenclatures" => "Cannot delete: nomenclature is used in warehouse stocks or movements.",
+                            _ => "Cannot delete: record is referenced by other data."
+                        };
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = message }));
+                    }
                     else if (pg.SqlState == "22001")
                     {
                         context.Response.StatusCode = 400;

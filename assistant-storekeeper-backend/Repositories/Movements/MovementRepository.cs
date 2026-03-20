@@ -5,6 +5,7 @@ using assistant_storekeeper_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 using System.Linq;
+using System;
 
 namespace assistant_storekeeper_backend.Repositories.Movements
 {
@@ -102,6 +103,17 @@ namespace assistant_storekeeper_backend.Repositories.Movements
         {
             _context.Movements.Remove(movement);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<Movement>> GetMovementsByDate(int companyWarehouseId, DateTime date, CancellationToken cancellationToken = default)
+        {
+            return await _context.Movements
+                .Include(m => m.CompanyWarehouseFrom)
+                .Include(m => m.CompanyWarehouseTo)
+                .Include(m => m.MovementNomenclatures)
+                .ThenInclude(mn => mn.Nomenclature)
+                .Where(m => (m.CompanyWarehouseFromId == companyWarehouseId || m.CompanyWarehouseToId == companyWarehouseId) && m.Date <= date)
+                .ToListAsync(cancellationToken);
         }
     }
 }
