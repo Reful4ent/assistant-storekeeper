@@ -27,6 +27,7 @@ using assistant_storekeeper_backend.Mappers;
 using AutoMapper;
 using assistant_storekeeper_backend.DTOS.MovementDTOs;
 using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureDTOs;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseDTOs;
 
 
 namespace assistant_storekeeper_backend
@@ -50,12 +51,15 @@ namespace assistant_storekeeper_backend
             string pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
             string connectionString = $"Host={host};Port={port};Database={dbName};Username={user};Password={pass}";
 
-            services.AddAutoMapper(
+            services.AddAutoMapper
+            (
                 (cfg) => { }, 
                 typeof(NomenclatureMapper), 
                 typeof(MovementNomenclatureMapper),
                 typeof(MovementMapper),
-                typeof(CompanyWarehouseNomenclatureMapper));
+                typeof(CompanyWarehouseNomenclatureMapper),
+                typeof(CompanyWarehouseMapper)
+            );
 
 
             services.AddScoped<ICompanyWarehouseRepository, CompanyWarehouseRepository>();

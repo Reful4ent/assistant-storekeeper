@@ -1,4 +1,4 @@
-namespace assistant_storekeeper_backend.DTOS.MovementDTOs
+namespace assistant_storekeeper_backend.DTOS.MovementNomenclatureDTOs
 {
     public class MovementNomenclatureDTO
     {

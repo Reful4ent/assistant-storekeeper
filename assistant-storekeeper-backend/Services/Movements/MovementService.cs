@@ -123,10 +123,16 @@ namespace assistant_storekeeper_backend.Services.Movements
                                 NomenclatureId = nomenclature.Id,
                                 Quantity = nomenclature.Quantity,
                             };
+                            if (companyWarehouseNomenclatureFromMoving.Quantity < nomenclature.Quantity) {
+                                throw new BadRequestException("Can't write more items than are in stock.");
+                            }
                             companyWarehouseNomenclatureFromMoving.Quantity -= nomenclature.Quantity;
                             await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureFromMoving.Id, companyWarehouseNomenclatureFromMoving, cancellationToken);
                             await _companyWareHouseNomenclatureService.CreateCompanyWarehouseNomenclature(companyWarehouseNomenclatureToMoving, cancellationToken);
                         } else {
+                            if (companyWarehouseNomenclatureFromMoving.Quantity < nomenclature.Quantity) {
+                                throw new BadRequestException("Can't write more items than are in stock.");
+                            }
                             companyWarehouseNomenclatureToMoving.Quantity += nomenclature.Quantity;
                             await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureToMoving.Id, companyWarehouseNomenclatureToMoving, cancellationToken);
                             companyWarehouseNomenclatureFromMoving.Quantity -= nomenclature.Quantity;
@@ -140,6 +146,9 @@ namespace assistant_storekeeper_backend.Services.Movements
                             cancellationToken);
                         if (companyWarehouseNomenclatureConsumption == null) {
                             throw new NotFoundException("Company warehouse nomenclature not found");
+                        }
+                        if (companyWarehouseNomenclatureConsumption.Quantity < nomenclature.Quantity) {
+                            throw new BadRequestException("Can't write more items than are in stock.");
                         }
                         companyWarehouseNomenclatureConsumption.Quantity -= nomenclature.Quantity;
                         await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureConsumption.Id, companyWarehouseNomenclatureConsumption, cancellationToken);

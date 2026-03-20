@@ -1,6 +1,6 @@
 using AutoMapper;
 using assistant_storekeeper_backend.Models;
-using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.DTOS.MovementNomenclatureDTOs;
 
 namespace assistant_storekeeper_backend.Mappers
 {
