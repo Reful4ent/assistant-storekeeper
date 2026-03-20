@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 using System.Linq;
 using System;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace assistant_storekeeper_backend.Repositories.Movements
 {
@@ -45,7 +46,7 @@ namespace assistant_storekeeper_backend.Repositories.Movements
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(m => m.Id.ToString().Contains(search));
+                query = query.Where(m => EF.Functions.ILike(m.Id.ToString(), "%" + search.Trim() + "%"));
             }
 
             if (sortBy == "CompanyWarehouseFrom")
@@ -112,7 +113,7 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                 .Include(m => m.CompanyWarehouseTo)
                 .Include(m => m.MovementNomenclatures)
                 .ThenInclude(mn => mn.Nomenclature)
-                .Where(m => (m.CompanyWarehouseFromId == companyWarehouseId || m.CompanyWarehouseToId == companyWarehouseId) && m.Date <= date)
+                .Where(m => (m.CompanyWarehouseFromId == companyWarehouseId || m.CompanyWarehouseToId == companyWarehouseId) && m.Date.Date <= date.Date)
                 .ToListAsync(cancellationToken);
         }
     }

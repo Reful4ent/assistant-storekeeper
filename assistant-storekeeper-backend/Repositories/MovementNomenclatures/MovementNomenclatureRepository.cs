@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace assistant_storekeeper_backend.Repositories.MovementNomenclatures
 {
@@ -41,7 +42,7 @@ namespace assistant_storekeeper_backend.Repositories.MovementNomenclatures
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(m => m.Nomenclature.Name.Contains(search));
+                query = query.Where(m => EF.Functions.ILike(m.Nomenclature.Name, "%" + search.Trim() + "%"));
             }
 
             if (sortBy == "NomenclatureName")
