@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
-
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace assistant_storekeeper_backend.Repositories.Nomenclatures
 {
@@ -35,7 +35,7 @@ namespace assistant_storekeeper_backend.Repositories.Nomenclatures
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(c => c.Name.Contains(search));
+                query = query.Where(c => EF.Functions.ILike(c.Name, "%" + search.Trim() + "%"));
             }
 
             if (sortBy == "Name")

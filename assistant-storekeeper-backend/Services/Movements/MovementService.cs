@@ -11,6 +11,8 @@ using assistant_storekeeper_backend.Services.Movements;
 using assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures;
 using assistant_storekeeper_backend.Services.MovementNomenclatures;
 using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.DTOS.WarehouseStateRequestDTOs;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureCalculateDTOs;
 
 
 
@@ -84,6 +86,11 @@ namespace assistant_storekeeper_backend.Services.Movements
                 throw new BadRequestException("Status must be moving");
             }
 
+            // Если перемещаем со склада на склад то склады не могут быть одинаковыми
+            if (movementDTO.Status == MovementStatus.Moving && movementDTO.CompanyWarehouseFromId == movementDTO.CompanyWarehouseToId) {
+                throw new BadRequestException("Company warehouse from and to cannot be the same");
+            }
+
             var movement = new Movement
             {
                 CompanyWarehouseFromId = movementDTO.CompanyWarehouseFromId,
@@ -91,6 +98,8 @@ namespace assistant_storekeeper_backend.Services.Movements
                 Status = movementDTO.Status,
                 Date = DateTime.UtcNow,
             };
+
+            await ValidateNomenclaturesStock(movementDTO, cancellationToken);
 
             Movement resultMovement = await _movementRepository.CreateMovement(movement, cancellationToken);
 
@@ -233,6 +242,95 @@ namespace assistant_storekeeper_backend.Services.Movements
                 await _movementNomenclatureService.DeleteMovementNomenclature(nomenclature.Id, cancellationToken);
             }
             await _movementRepository.DeleteMovement(existingMovement, cancellationToken);
+        }
+
+        public async Task<WarehouseStateResponseDTO> GetMovementsByDate(WarehouseStateRequestDTO warehouseStateRequestDTO, CancellationToken cancellationToken = default)
+        {
+            await _companyWarehouseService.GetCompanyWarehouseById(warehouseStateRequestDTO.CompanyWarehouseId, cancellationToken);
+            if (warehouseStateRequestDTO.RequestDate == null) {
+                throw new BadRequestException("Request date is required");
+            }
+            var movements = await _movementRepository.GetMovementsByDate(warehouseStateRequestDTO.CompanyWarehouseId, warehouseStateRequestDTO.RequestDate, cancellationToken);
+            var companyWarehouseNomenclaturesDictionary = new Dictionary<int, (int quantity, string nomenclatureName)>();
+            foreach (var movement in movements) {
+                foreach (var movementNomenclatures in movement.MovementNomenclatures) {
+                    if (companyWarehouseNomenclaturesDictionary.ContainsKey(movementNomenclatures.NomenclatureId)) {
+                        int currentQuantity = CalculateQuantity(
+                            movement.Status, 
+                            companyWarehouseNomenclaturesDictionary[movementNomenclatures.NomenclatureId].quantity, 
+                            movementNomenclatures.Quantity, 
+                            movement.CompanyWarehouseFromId,
+                            warehouseStateRequestDTO.CompanyWarehouseId,
+                            cancellationToken);
+                        companyWarehouseNomenclaturesDictionary[movementNomenclatures.NomenclatureId] = (currentQuantity, movementNomenclatures.Nomenclature.Name);
+                    } else {
+                        int currentQuantity = CalculateQuantity(
+                            movement.Status, 
+                            0, 
+                            movementNomenclatures.Quantity,
+                            movement.CompanyWarehouseFromId,
+                            warehouseStateRequestDTO.CompanyWarehouseId,
+                            cancellationToken);
+                        companyWarehouseNomenclaturesDictionary[movementNomenclatures.NomenclatureId] = (currentQuantity, movementNomenclatures.Nomenclature.Name);
+                    }
+                }
+            }
+            List<CompanyWarehouseNomenclatureCalculateDTO> companyWarehouseNomenclatures = new List<CompanyWarehouseNomenclatureCalculateDTO>();
+            foreach (var nomenclature in companyWarehouseNomenclaturesDictionary) {
+                companyWarehouseNomenclatures.Add(new CompanyWarehouseNomenclatureCalculateDTO
+                {
+                    NomenclatureId = nomenclature.Key,
+                    Quantity = nomenclature.Value.quantity,
+                    NomenclatureName = nomenclature.Value.nomenclatureName
+                });
+            }
+            return new WarehouseStateResponseDTO
+            {
+                CompanyWarehouseNomenclatures = companyWarehouseNomenclatures
+            };
+        }
+
+        private int CalculateQuantity(
+            MovementStatus status, 
+            int currentQuantity, 
+            int movementQuantity,
+            int? companyWarehouseFromId,
+            int companyWarehouseId,
+            CancellationToken cancellationToken = default)
+        {
+            switch (status) {
+                case MovementStatus.Moving:
+                    if (companyWarehouseFromId != null && companyWarehouseId == companyWarehouseFromId.Value) {
+                        return currentQuantity - movementQuantity;
+                    } 
+                    return currentQuantity + movementQuantity;
+                case MovementStatus.Consumption:
+                    return currentQuantity - movementQuantity;
+                case MovementStatus.Coming:
+                    return currentQuantity + movementQuantity;
+            }
+            return currentQuantity;
+        }
+
+        private async Task ValidateNomenclaturesStock(MovementDTO movementDTO, CancellationToken cancellationToken)
+        {
+            if (movementDTO.Status != MovementStatus.Consumption && movementDTO.Status != MovementStatus.Moving)
+                return;
+
+            var warehouseId = movementDTO.CompanyWarehouseFromId!.Value;
+            foreach (var nomenclature in movementDTO.Nomenclatures)
+            {
+                var companyWareHouseNomenclatureService = await _companyWareHouseNomenclatureService.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
+                        warehouseId, 
+                        nomenclature.Id, 
+                        cancellationToken);
+
+                if (companyWareHouseNomenclatureService == null)
+                    throw new NotFoundException("Company warehouse nomenclature not found");
+
+                if (companyWareHouseNomenclatureService.Quantity < nomenclature.Quantity)
+                    throw new BadRequestException("Can't write more items than are in stock.");
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatures
 {
@@ -53,9 +54,8 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatur
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(c => c.Nomenclature.Name.Contains(search));
+                query = query.Where(c => EF.Functions.ILike(c.Nomenclature.Name, "%" + search.Trim() + "%"));
             }
-
             if (sortBy == "NomenclatureName")
             {
                 query = isAscending == true 

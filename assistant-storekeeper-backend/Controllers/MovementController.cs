@@ -5,6 +5,8 @@ using assistant_storekeeper_backend.Models;
 using assistant_storekeeper_backend.DTOS.MovementDTOs;
 using AutoMapper;
 using System.Collections.Generic;
+using assistant_storekeeper_backend.DTOS.WarehouseStateRequestDTOs;
+using System.Threading;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -51,6 +53,14 @@ namespace assistant_storekeeper_backend.Controllers
         {
             await _movementService.DeleteMovement(id);
             return NoContent();
+        }
+
+        [HttpPost("warehouse-state")]
+        public async Task<IActionResult> GetWarehouseState(
+            [FromBody] WarehouseStateRequestDTO warehouseStateRequestDTO)
+        {
+            var warehouseState = await _movementService.GetMovementsByDate(warehouseStateRequestDTO);
+            return Ok(warehouseState);
         }
     }
 }

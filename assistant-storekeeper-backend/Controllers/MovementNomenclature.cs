@@ -3,6 +3,10 @@ using System.Threading.Tasks;
 using System.Threading;
 using assistant_storekeeper_backend.Services.MovementNomenclatures;
 using assistant_storekeeper_backend.Models;
+using AutoMapper;
+using assistant_storekeeper_backend.DTOS.MovementNomenclatureDTOs;
+using System.Collections.Generic;
+
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -11,9 +15,11 @@ namespace assistant_storekeeper_backend.Controllers
     public class MovementNomenclatureController : ControllerBase
     {
         private readonly IMovementNomenclatureService _movementNomenclatureService;
-        public MovementNomenclatureController(IMovementNomenclatureService movementNomenclatureService)
+        private readonly IMapper _mapper;
+        public MovementNomenclatureController(IMovementNomenclatureService movementNomenclatureService, IMapper mapper)
         {
             _movementNomenclatureService = movementNomenclatureService;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -26,7 +32,8 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] int movementId = 0,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await _movementNomenclatureService.GetAllMovementNomenclatures(movementId, page, pageSize, search, isAscending, sortBy, cancellationToken));
+            var movementNomenclatures = await _movementNomenclatureService.GetAllMovementNomenclatures(movementId, page, pageSize, search, isAscending, sortBy, cancellationToken);
+            return Ok(_mapper.Map<List<MovementNomenclatureDTO>>(movementNomenclatures));
         }
 
         /*

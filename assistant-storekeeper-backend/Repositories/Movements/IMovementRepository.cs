@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using assistant_storekeeper_backend.Models;
 using System.Linq;
+using System;
 
 namespace assistant_storekeeper_backend.Repositories.Movements
 {
@@ -19,5 +20,6 @@ namespace assistant_storekeeper_backend.Repositories.Movements
         Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default);
         Task<Movement> UpdateMovement(Movement movement, CancellationToken cancellationToken = default);
         Task DeleteMovement(Movement movement, CancellationToken cancellationToken = default);
+        Task <IEnumerable<Movement>> GetMovementsByDate(int companyWarehouseId, DateTime date, CancellationToken cancellationToken = default);
     }
 }
