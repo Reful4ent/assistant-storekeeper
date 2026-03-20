@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using assistant_storekeeper_backend.Models;
 using assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatures;
-using assistant_storekeeper_backend.Repositories.CompanyWarehouses;
-using assistant_storekeeper_backend.Repositories.Nomenclatures;
 using assistant_storekeeper_backend.Exceptions;
+using assistant_storekeeper_backend.Services.CompanyWarehouses;
+using assistant_storekeeper_backend.Services.Nomenclatures;
 
 namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
 {
