@@ -13,17 +13,17 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
     public class CompanyWareHouseNomenclatureService : ICompanyWareHouseNomenclatureService
     {
         private readonly ICompanyWareHouseNomenclatureRepository _companyWareHouseNomenclatureRepository;
-        private readonly ICompanyWarehouseRepository _companyWarehouseRepository;
-        private readonly INomenclatureRepository _nomenclatureRepository;
+        private readonly ICompanyWarehouseService _companyWarehouseService;
+        private readonly INomenclatureService _nomenclatureService;
 
         public CompanyWareHouseNomenclatureService(
             ICompanyWareHouseNomenclatureRepository companyWareHouseNomenclatureRepository,
-            ICompanyWarehouseRepository companyWarehouseRepository,
-            INomenclatureRepository nomenclatureRepository)
+            ICompanyWarehouseService companyWarehouseService,
+            INomenclatureService nomenclatureService)
         {
             _companyWareHouseNomenclatureRepository = companyWareHouseNomenclatureRepository;
-            _companyWarehouseRepository = companyWarehouseRepository;
-            _nomenclatureRepository = nomenclatureRepository;
+            _companyWarehouseService = companyWarehouseService;
+            _nomenclatureService = nomenclatureService;
         }
 
         public async Task<CompanyWarehouseNomenclature?> GetCompanyWarehouseNomenclatureById(
@@ -43,6 +43,9 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
             int nomenclatureId,
             CancellationToken cancellationToken = default)
         {
+            await ValidateCompanyWarehouseNomenclature(companyWarehouseId, cancellationToken);
+            await ValidateNomenclature(nomenclatureId, cancellationToken);
+
             return await _companyWareHouseNomenclatureRepository.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(
                 companyWarehouseId, 
                 nomenclatureId, 
@@ -58,18 +61,8 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
             string? sortBy, 
             CancellationToken cancellationToken = default)
         {
-            if (companyWarehouseId <= 0)
-            {
-                throw new BadRequestException("Company warehouse is required");
-            }
-            else
-            {
-                var companyWarehouse = await _companyWarehouseRepository.GetCompanyWarehouseById(companyWarehouseId, cancellationToken);
-                if (companyWarehouse == null)
-                {
-                    throw new NotFoundException("Company warehouse not found");
-                }
-            }
+            await ValidateCompanyWarehouseNomenclature(companyWarehouseId, cancellationToken);
+
             return await _companyWareHouseNomenclatureRepository.GetAllCompanyWarehouseNomenclatures(companyWarehouseId, page, pageSize, search, isAscending, sortBy, cancellationToken);
         }
 
@@ -77,38 +70,13 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
             CompanyWarehouseNomenclature companyWarehouseNomenclature, 
             CancellationToken cancellationToken = default)
         {
-            if (companyWarehouseNomenclature.CompanyWarehouseId <= 0)
-            {
-                throw new BadRequestException("Company warehouse is required");
-            }
-            else
-            {
-                var companyWarehouse = await _companyWarehouseRepository.GetCompanyWarehouseById(companyWarehouseNomenclature.CompanyWarehouseId, cancellationToken);
-                if (companyWarehouse == null)
-                {
-                    throw new NotFoundException("Company warehouse not found");
-                }
-            }
-            if (companyWarehouseNomenclature.NomenclatureId <= 0)
-            {
-                throw new BadRequestException("Nomenclature is required");
-            }
-            else
-            {
-                var nomenclature = await _nomenclatureRepository.GetNomenclatureById(companyWarehouseNomenclature.NomenclatureId, cancellationToken);
-                if (nomenclature == null)
-                {
-                    throw new NotFoundException("Nomenclature not found");
-                }
-            }
-
-            if (companyWarehouseNomenclature.Quantity <= 0)
-            {
-                throw new BadRequestException("Quantity is required");
-            }
+            await ValidateCompanyWarehouseNomenclature(companyWarehouseNomenclature.CompanyWarehouseId, cancellationToken);
+            await ValidateNomenclature(companyWarehouseNomenclature.NomenclatureId, cancellationToken);
+            await ValidateQuantity(companyWarehouseNomenclature.Quantity, cancellationToken);
 
             return await _companyWareHouseNomenclatureRepository.CreateCompanyWarehouseNomenclature(companyWarehouseNomenclature, cancellationToken);
         }
+
         public async Task<CompanyWarehouseNomenclature> UpdateCompanyWarehouseNomenclature(int id, CompanyWarehouseNomenclature companyWarehouseNomenclature, CancellationToken cancellationToken = default)
         {
             var existingCompanyWarehouseNomenclature = await _companyWareHouseNomenclatureRepository.GetCompanyWarehouseNomenclatureById(id, cancellationToken);
@@ -117,35 +85,9 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
                 throw new NotFoundException("Company warehouse nomenclature not found");
             }
 
-            if (companyWarehouseNomenclature.CompanyWarehouseId <= 0)
-            {
-                throw new BadRequestException("Company warehouse is required");
-            }
-            else
-            {
-                var companyWarehouse = await _companyWarehouseRepository.GetCompanyWarehouseById(companyWarehouseNomenclature.CompanyWarehouseId, cancellationToken);
-                if (companyWarehouse == null)
-                {
-                    throw new NotFoundException("Company warehouse not found");
-                }
-            }
-            if (companyWarehouseNomenclature.NomenclatureId <= 0)
-            {
-                throw new BadRequestException("Nomenclature is required");
-            }
-            else
-            {
-                var nomenclature = await _nomenclatureRepository.GetNomenclatureById(companyWarehouseNomenclature.NomenclatureId, cancellationToken);
-                if (nomenclature == null)
-                {
-                    throw new NotFoundException("Nomenclature not found");
-                }
-            }
-
-            if (companyWarehouseNomenclature.Quantity <= 0)
-            {
-                throw new BadRequestException("Quantity is required");
-            }
+            await ValidateCompanyWarehouseNomenclature(companyWarehouseNomenclature.CompanyWarehouseId, cancellationToken);
+            await ValidateNomenclature(companyWarehouseNomenclature.NomenclatureId, cancellationToken);
+            await ValidateQuantity(companyWarehouseNomenclature.Quantity, cancellationToken);
 
             existingCompanyWarehouseNomenclature.CompanyWarehouseId = companyWarehouseNomenclature.CompanyWarehouseId;
             existingCompanyWarehouseNomenclature.NomenclatureId = companyWarehouseNomenclature.NomenclatureId;
@@ -161,6 +103,38 @@ namespace assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures
                 throw new NotFoundException("Company warehouse nomenclature not found");
             }
             await _companyWareHouseNomenclatureRepository.DeleteCompanyWarehouseNomenclature(companyWarehouseNomenclature, cancellationToken);
+        }
+        
+        private async Task ValidateCompanyWarehouseNomenclature(int Id, CancellationToken cancellationToken = default) 
+        {
+            if (Id <= 0)
+            {
+                throw new BadRequestException("Id is required");
+            }
+            else
+            {
+                await _companyWarehouseService.GetCompanyWarehouseById(Id, cancellationToken);
+            }
+        }
+
+        private async Task ValidateNomenclature(int Id, CancellationToken cancellationToken = default) 
+        {
+            if (Id <= 0)
+            {
+                throw new BadRequestException("Id is required");
+            }
+            else
+            {
+                await _nomenclatureService.GetNomenclatureById(Id, cancellationToken);
+            }
+        }
+
+        private async Task ValidateQuantity(int Quantity, CancellationToken cancellationToken = default) 
+        {
+            if (Quantity <= 0)
+            {
+                throw new BadRequestException("Quantity is required");
+            }
         }
     }
 }
