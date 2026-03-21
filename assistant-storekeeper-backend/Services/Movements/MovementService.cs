@@ -99,6 +99,8 @@ namespace assistant_storekeeper_backend.Services.Movements
                 Date = DateTime.UtcNow,
             };
 
+
+            // ВАЖНО: Проверяем, что номенклатуры существуют и количество на складе достаточно перед созданием перемещения
             await ValidateNomenclaturesStock(movementDTO, cancellationToken);
 
             Movement resultMovement = await _movementRepository.CreateMovement(movement, cancellationToken);
@@ -121,10 +123,6 @@ namespace assistant_storekeeper_backend.Services.Movements
                             movementDTO.CompanyWarehouseToId.Value, 
                             nomenclature.Id, 
                             cancellationToken);
-
-                        if (companyWarehouseNomenclatureFromMoving == null) {
-                            throw new NotFoundException("Company warehouse nomenclature not found");
-                        }
                         if (companyWarehouseNomenclatureToMoving == null) {
                             companyWarehouseNomenclatureToMoving = new CompanyWarehouseNomenclature
                             {
@@ -132,16 +130,10 @@ namespace assistant_storekeeper_backend.Services.Movements
                                 NomenclatureId = nomenclature.Id,
                                 Quantity = nomenclature.Quantity,
                             };
-                            if (companyWarehouseNomenclatureFromMoving.Quantity < nomenclature.Quantity) {
-                                throw new BadRequestException("Can't write more items than are in stock.");
-                            }
                             companyWarehouseNomenclatureFromMoving.Quantity -= nomenclature.Quantity;
                             await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureFromMoving.Id, companyWarehouseNomenclatureFromMoving, cancellationToken);
                             await _companyWareHouseNomenclatureService.CreateCompanyWarehouseNomenclature(companyWarehouseNomenclatureToMoving, cancellationToken);
                         } else {
-                            if (companyWarehouseNomenclatureFromMoving.Quantity < nomenclature.Quantity) {
-                                throw new BadRequestException("Can't write more items than are in stock.");
-                            }
                             companyWarehouseNomenclatureToMoving.Quantity += nomenclature.Quantity;
                             await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureToMoving.Id, companyWarehouseNomenclatureToMoving, cancellationToken);
                             companyWarehouseNomenclatureFromMoving.Quantity -= nomenclature.Quantity;
@@ -153,12 +145,6 @@ namespace assistant_storekeeper_backend.Services.Movements
                             movementDTO.CompanyWarehouseFromId.Value, 
                             nomenclature.Id, 
                             cancellationToken);
-                        if (companyWarehouseNomenclatureConsumption == null) {
-                            throw new NotFoundException("Company warehouse nomenclature not found");
-                        }
-                        if (companyWarehouseNomenclatureConsumption.Quantity < nomenclature.Quantity) {
-                            throw new BadRequestException("Can't write more items than are in stock.");
-                        }
                         companyWarehouseNomenclatureConsumption.Quantity -= nomenclature.Quantity;
                         await _companyWareHouseNomenclatureService.UpdateCompanyWarehouseNomenclature(companyWarehouseNomenclatureConsumption.Id, companyWarehouseNomenclatureConsumption, cancellationToken);
                         break;
@@ -183,7 +169,7 @@ namespace assistant_storekeeper_backend.Services.Movements
                 }
             }
 
-            return await _movementRepository.GetMovementById(movement.Id, cancellationToken);
+            return await _movementRepository.GetMovementById(resultMovement.Id, cancellationToken);
         }
 
 
@@ -244,13 +230,22 @@ namespace assistant_storekeeper_backend.Services.Movements
             await _movementRepository.DeleteMovement(existingMovement, cancellationToken);
         }
 
+
+        /// <summary>
+        /// Получает список перемещений за дату
+        /// <param name="warehouseStateRequestDTO">DTO запроса</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>Список перемещений за дату</returns>
+        /// <exception cref="BadRequestException">Если дата запроса не указана</exception>
+        /// <exception cref="NotFoundException">Если склад не найден</exception>
+        /// </summary>
         public async Task<WarehouseStateResponseDTO> GetMovementsByDate(WarehouseStateRequestDTO warehouseStateRequestDTO, CancellationToken cancellationToken = default)
         {
             await _companyWarehouseService.GetCompanyWarehouseById(warehouseStateRequestDTO.CompanyWarehouseId, cancellationToken);
             if (warehouseStateRequestDTO.RequestDate == null) {
                 throw new BadRequestException("Request date is required");
             }
-            var movements = await _movementRepository.GetMovementsByDate(warehouseStateRequestDTO.CompanyWarehouseId, warehouseStateRequestDTO.RequestDate, cancellationToken);
+            var movements = await _movementRepository.GetMovementsByDate(warehouseStateRequestDTO.CompanyWarehouseId, warehouseStateRequestDTO.RequestDate.Value, cancellationToken);
             var companyWarehouseNomenclaturesDictionary = new Dictionary<int, (int quantity, string nomenclatureName)>();
             foreach (var movement in movements) {
                 foreach (var movementNomenclatures in movement.MovementNomenclatures) {
@@ -290,6 +285,16 @@ namespace assistant_storekeeper_backend.Services.Movements
             };
         }
 
+        /// <summary>
+        /// Рассчитывает количество номенклатуры на складе после перемещения
+        /// <param name="status">Статус перемещения</param>
+        /// <param name="currentQuantity">Текущее количество номенклатуры на складе</param>
+        /// <param name="movementQuantity">Количество номенклатуры в перемещении</param>
+        /// <param name="companyWarehouseFromId">ID склада откуда перемещаем</param>
+        /// <param name="companyWarehouseId">ID склада куда перемещаем</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>Количество номенклатуры на складе после перемещения</returns>
+        /// </summary>
         private int CalculateQuantity(
             MovementStatus status, 
             int currentQuantity, 
@@ -312,8 +317,19 @@ namespace assistant_storekeeper_backend.Services.Movements
             return currentQuantity;
         }
 
+        /// <summary>
+        /// Проверяет, что номенклатуры существуют и количество на складе достаточно перед созданием перемещения
+        /// <param name="movementDTO">DTO перемещения</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <exception cref="BadRequestException">Если номенклатуры не существуют</exception>
+        /// <exception cref="NotFoundException">Если номенклатура не найдена на складе</exception>
+        /// <exception cref="BadRequestException">Если количество на складе меньше, чем количество указанное в перемещении</exception>
+        /// </summary>
         private async Task ValidateNomenclaturesStock(MovementDTO movementDTO, CancellationToken cancellationToken)
         {
+            if (movementDTO.Nomenclatures.Count == 0)
+                throw new BadRequestException("Nomenclatures are required");
+
             if (movementDTO.Status != MovementStatus.Consumption && movementDTO.Status != MovementStatus.Moving)
                 return;
 
