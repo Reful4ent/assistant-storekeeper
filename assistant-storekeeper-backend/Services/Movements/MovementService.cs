@@ -245,7 +245,7 @@ namespace assistant_storekeeper_backend.Services.Movements
             if (warehouseStateRequestDTO.RequestDate == null) {
                 throw new BadRequestException("Request date is required");
             }
-            var movements = await _movementRepository.GetMovementsByDate(warehouseStateRequestDTO.CompanyWarehouseId, warehouseStateRequestDTO.RequestDate, cancellationToken);
+            var movements = await _movementRepository.GetMovementsByDate(warehouseStateRequestDTO.CompanyWarehouseId, warehouseStateRequestDTO.RequestDate.Value, cancellationToken);
             var companyWarehouseNomenclaturesDictionary = new Dictionary<int, (int quantity, string nomenclatureName)>();
             foreach (var movement in movements) {
                 foreach (var movementNomenclatures in movement.MovementNomenclatures) {

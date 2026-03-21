@@ -58,11 +58,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int companyWarehouseToId = 1;
             int nomenclatureId = 10;
             int movementNomenclatureId = 100;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = 5 }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = null,
@@ -104,11 +104,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int companyWarehouseFromId = 1;
             int nomenclatureId = 10;
             int movementNomenclatureId = 100;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = 5 }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = companyWarehouseFromId,
@@ -151,11 +151,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int companyWarehouseToId = 2;
             int nomenclatureId = 10;
             int movementNomenclatureId = 100;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = 5 }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = companyWarehouseFromId,
@@ -199,11 +199,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int nomenclatureId = 10;
             int movementNomenclatureId = 100;
             int cwnFromId = 1;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = 5 }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = companyWarehouseFromId,
@@ -211,7 +211,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 Status = MovementStatus.Moving,
                 Date = DateTime.UtcNow
             };
-            var companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
+            CompanyWarehouseNomenclature companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
                 Id = cwnFromId, 
                 CompanyWarehouseId = companyWarehouseFromId, 
                 NomenclatureId = nomenclatureId, 
@@ -256,11 +256,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int cwnId = 1;
             int quantity = 5;
             int currentQuantity = 20;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = quantity }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = null,
@@ -268,7 +268,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 Status = MovementStatus.Coming,
                 Date = DateTime.UtcNow
             };
-            var companyWarehouseNomenclatureTo = new CompanyWarehouseNomenclature { 
+            CompanyWarehouseNomenclature companyWarehouseNomenclatureTo = new CompanyWarehouseNomenclature { 
                 Id = cwnId, 
                 CompanyWarehouseId = companyWarehouseToId, 
                 NomenclatureId = nomenclatureId, 
@@ -287,7 +287,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             Mock<ICompanyWareHouseNomenclatureService> mockCompanyWareHouseNomenclatureService = new Mock<ICompanyWareHouseNomenclatureService>();
             mockCompanyWareHouseNomenclatureService
                 .Setup(s => s.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(companyWarehouseToId, nomenclatureId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(cwn);
+                .ReturnsAsync(companyWarehouseNomenclatureTo);
 
             MovementService sut = CreateSut(mockMovementRepo: mockMovementRepo, 
                 mockCwn: mockCompanyWareHouseNomenclatureService, 
@@ -307,7 +307,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                     movementNomenclatureId, It.IsAny<CancellationToken>()),
                      Times.Once);
 
-            mockMovementRepository.Verify(
+            mockMovementRepo.Verify(
                 r => r.DeleteMovement(existingMovement, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -322,11 +322,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int cwnId = 1;
             int quantity = 5;
             int currentQuantity = 20;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = quantity }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = companyWarehouseFromId,
@@ -334,7 +334,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 Status = MovementStatus.Consumption,
                 Date = DateTime.UtcNow
             };
-            var companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
+            CompanyWarehouseNomenclature companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
                 Id = cwnId, 
                 CompanyWarehouseId = companyWarehouseFromId, 
                 NomenclatureId = nomenclatureId, 
@@ -351,9 +351,9 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 .ReturnsAsync(movementNomenclatures);
 
             Mock<ICompanyWareHouseNomenclatureService> mockCompanyWareHouseNomenclatureService = new Mock<ICompanyWareHouseNomenclatureService>();
-            mockCompanyWarehouseNomenclatureService
+            mockCompanyWareHouseNomenclatureService
                 .Setup(s => s.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(companyWarehouseFromId, nomenclatureId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(cwn);
+                .ReturnsAsync(companyWarehouseNomenclatureFrom);
 
             MovementService sut = CreateSut(
                 mockMovementRepo: mockMovementRepo, 
@@ -374,7 +374,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                     movementNomenclatureId, It.IsAny<CancellationToken>()),
                      Times.Once);
 
-            mockMovementRepository.Verify(
+            mockMovementRepo.Verify(
                 r => r.DeleteMovement(existingMovement, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -392,11 +392,11 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
             int quantity = 5;
             int currentQuantityFrom = 15;
             int currentQuantityTo = 10;
-            var movementNomenclatures = new List<MovementNomenclature>
+            List<MovementNomenclature> movementNomenclatures = new List<MovementNomenclature>
             {
                 new MovementNomenclature { Id = movementNomenclatureId, MovementId = movementId, NomenclatureId = nomenclatureId, Quantity = quantity }
             };
-            var existingMovement = new Movement
+            Movement existingMovement = new Movement
             {
                 Id = movementId,
                 CompanyWarehouseFromId = companyWarehouseFromId,
@@ -404,12 +404,12 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 Status = MovementStatus.Moving,
                 Date = DateTime.UtcNow
             };
-            var companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
+            CompanyWarehouseNomenclature companyWarehouseNomenclatureFrom = new CompanyWarehouseNomenclature { 
                 Id = cwnFromId, 
                 CompanyWarehouseId = companyWarehouseFromId, 
                 NomenclatureId = nomenclatureId, 
                 Quantity = currentQuantityFrom };
-            var companyWarehouseNomenclatureTo = new CompanyWarehouseNomenclature { 
+            CompanyWarehouseNomenclature companyWarehouseNomenclatureTo = new CompanyWarehouseNomenclature { 
                 Id = cwnToId, 
                 CompanyWarehouseId = companyWarehouseToId, 
                 NomenclatureId = nomenclatureId, 
@@ -426,12 +426,12 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                 .ReturnsAsync(movementNomenclatures);
 
             Mock<ICompanyWareHouseNomenclatureService> mockCompanyWareHouseNomenclatureService = new Mock<ICompanyWareHouseNomenclatureService>();
-            mockCompanyWarehouseNomenclatureService
+            mockCompanyWareHouseNomenclatureService
                 .Setup(s => s.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(companyWarehouseFromId, nomenclatureId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(cwnFrom);
-            mockCwn
+                .ReturnsAsync(companyWarehouseNomenclatureFrom);
+            mockCompanyWareHouseNomenclatureService
                 .Setup(s => s.GetCompanyWarehouseNomenclatureByCompanyWarehouseIdAndNomenclatureId(companyWarehouseToId, nomenclatureId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(cwnTo);
+                .ReturnsAsync(companyWarehouseNomenclatureTo);
 
             MovementService sut = CreateSut(mockMovementRepo: mockMovementRepo, 
                 mockCwn: mockCompanyWareHouseNomenclatureService, 
@@ -458,7 +458,7 @@ namespace assistant_storekeeper_backend.Tests.Services.Movements
                     movementNomenclatureId, It.IsAny<CancellationToken>()),
                      Times.Once);
 
-            mockMovementRepository.Verify(
+            mockMovementRepo.Verify(
                 r => r.DeleteMovement(existingMovement, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
