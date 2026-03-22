@@ -1,109 +1,196 @@
 <script setup>
- import { ref } from 'vue';
- import axios from 'axios';
- import { onMounted } from 'vue';
- import { useRouter } from 'vue-router';
- import { message } from 'ant-design-vue';
- 
- const companyWarehouses = ref([]);
- const search = ref('');
- const loading = ref(true);
- const router = useRouter();
- const columns = ref([
-    {
-        title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
-        width: "1%",
-    },
-    {
-        title: 'Название',
-        dataIndex: 'name',
-        key: 'name',
-    },
-    {
-        title: 'Действия',
-        dataIndex: 'actions',
-        key: 'actions',
-        width: "20%",
-    }
- ]);
- const apiUrl = import.meta.env.VITE_API_URL;
+  import { ref, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { message } from 'ant-design-vue';
+  import { columns } from './ui/columns/columns';
+  import axios from 'axios';
 
- const getCompanyWarehouses = async () => {
+  const router = useRouter();
+  const route = useRoute();
+
+  const companyWarehouses = ref([]);
+  const loading = ref(true);
+
+  const search = ref(route.query.search || '');
+  const sortField = ref(route.query.sortBy || 'Id');
+  const sortOrder = ref(route.query.isAscending === 'false' ? 'descend' : 'ascend');
+  const pagination = ref({
+    current: parseInt(route.query.page) || 1,
+    pageSize: parseInt(route.query.pageSize) || 10,
+    total: 0
+  })
+
+  const updateUrl = () => {
+    router.replace({
+      path: route.path,
+      query: {
+        ...(search.value && { search: search.value }),
+        isAscending: sortOrder.value === 'ascend',
+        sortBy: sortField.value,
+        page: pagination.value.current,
+        pageSize: pagination.value.pageSize,
+      }
+    })
+  }
+
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  const getCompanyWarehouses = async () => {
     try {
-        const response = await axios.get(apiUrl + '/api/company-warehouses');
-        companyWarehouses.value = response.data.data;
+      const params = {
+        page: pagination.value.current,
+        pageSize: pagination.value.pageSize,
+        ...(search.value && { search: search.value }),
+        sortBy: sortField.value,
+        isAscending: sortOrder.value === 'ascend',
+      }
+      const response = await axios.get(apiUrl + '/api/company-warehouses', { params });
+      companyWarehouses.value = response.data.data;
+      pagination.value.total = response.data.total;
     } catch (error) {
-        message.error('Не удалось получить склады');
+      message.error('Не удалось получить склады');
     } finally {
-        loading.value = false;
+      loading.value = false;
     }
- }
+  }
 
- const onEditClick = (id) => {
+  const onSearch = () => {
+    pagination.value.current = 1;
+    updateUrl();
+  };
+
+  const onTableChange = (paginationTable, filters, sorter) => {
+    pagination.value.current = paginationTable.current;
+    pagination.value.pageSize = paginationTable.pageSize;
+    if (sorter.field) {
+      if (typeof sorter.order === 'undefined') {
+        sortField.value = 'Id';
+        sortOrder.value = 'ascend';
+      } else {
+        sortField.value = sorter.field;
+        sortOrder.value = sorter.order === 'ascend' ? 'ascend' : 'descend';
+      }
+    }
+    updateUrl();
+  }
+
+  const onEditClick = (id) => {
     router.push(`/company-warehouses/${id}/edit`);
- }
+  }
 
- const onShowClick = (id) => {
+  const onShowClick = (id) => {
     console.log(id);
     router.push(`/company-warehouses/${id}`);
- }
+  }
 
- const onAddClick = () => {
+  const onAddClick = () => {
     router.push('/company-warehouses/create');
- }
+  }
 
- const onDeleteClick = async (id) => {
+  const onDeleteClick = async (id) => {
     try {
-        const response = await axios.delete(apiUrl + `/api/company-warehouses/${id}`);
-        if (response.status === 204) {
-            message.success('Склад успешно удален');
-            await getCompanyWarehouses();
-        }
+      const response = await axios.delete(apiUrl + `/api/company-warehouses/${id}`);
+      if (response.status === 204) {
+        message.success('Склад успешно удален');
+        await getCompanyWarehouses();
+      }
     } catch (error) {
-        message.error('Не удалось удалить склад');
+      message.error('Не удалось удалить склад');
     }
- }
+  }
 
- onMounted(async () => {
-    await getCompanyWarehouses();
- })
+  watch(() => route.query, (newQuery) => {
+    pagination.value.current = parseInt(newQuery.page, 10) || 1;
+    pagination.value.pageSize = parseInt(newQuery.pageSize, 10) || 10;
+    search.value = newQuery.search || '';
+    sortField.value = newQuery.sortBy || 'Id';
+    sortOrder.value = newQuery.isAscending === 'false' ? 'descend' : 'ascend';
+    getCompanyWarehouses();
+  }, { immediate: true })
 </script>
 
 <template>
-    <div class="flex justify-end mb-4">
-        <a-button type="primary"@click="onAddClick">
-            Добавить склад
+  <div class="flex justify-end mb-4 gap-2">
+    <a-input-search
+      v-model:value="search"
+      placeholder="Поиск по названию"
+      enter-button
+      allow-clear
+      @search="onSearch"
+    />
+    <a-button type="primary"@click="onAddClick">
+      Добавить склад
+    </a-button>
+  </div>
+  <a-table 
+    bordered 
+    :columns="columns" 
+    :data-source="companyWarehouses" 
+    :loading="loading" 
+    :pagination="{
+      current: pagination.page,
+      pageSize: pagination.pageSize,
+      total: pagination.total,
+      showSizeChanger: true,
+      showTotal: (total) => `Всего: ${total}`,
+    }"
+    @change="onTableChange"
+  >
+    <template 
+        #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
+    >
+      <div style="padding: 8px">
+        <a-input
+          ref="searchInput"
+          :placeholder="`Search ${column.dataIndex}`"
+          :value="selectedKeys[0]"
+          style="width: 188px; margin-bottom: 8px; display: block"
+          @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
+          @pressEnter="handleSearch(selectedKeys, confirm, column.dataIndex)"
+        />
+        <a-button
+          type="primary"
+          size="small"
+          style="width: 90px; margin-right: 8px"
+          @click="handleSearch(selectedKeys, confirm, column.dataIndex)"
+        >
+          <template #icon><SearchOutlined /></template>
+          Search
         </a-button>
-    </div>
-    <a-table bordered :columns="columns" :data-source="companyWarehouses" :loading="loading">
-        <template #bodyCell="{ column, record }">
-            <template v-if="column.dataIndex === 'actions'">
-                <div class="flex gap-2">
-                    <a-button 
-                        type="primary"
-                        style="background-color:rgb(4, 160, 74); "
-                        @click="onEditClick(record.id)"
-                    >
-                        Редактировать
-                    </a-button>
-                    <a-button 
-                        type="primary" 
-                        @click="onShowClick(record.id)"
-                    >
-                        Посмотреть
-                    </a-button>
-                    <a-popconfirm 
-                        title="Вы уверены, что хотите удалить этот склад?" 
-                        @confirm="onDeleteClick(record.id)"
-                    >
-                        <a-button type="primary" danger>
-                            Удалить
-                        </a-button>
-                    </a-popconfirm>
-                </div>
-            </template>
-        </template>
-    </a-table>
+        <a-button size="small" style="width: 90px" @click="handleReset(clearFilters)">
+          Reset
+        </a-button>
+      </div>
+    </template>
+    <template #customFilterIcon="{ filtered }">
+      <search-outlined :style="{ color: filtered ? '#108ee9' : undefined }" />
+    </template>
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.dataIndex === 'actions'">
+        <div class="flex gap-2">
+          <a-button 
+            type="primary"
+            style="background-color:rgb(4, 160, 74); "
+            @click="onEditClick(record.id)"
+          >
+            Редактировать
+          </a-button>
+          <a-button 
+            type="primary" 
+            @click="onShowClick(record.id)"
+          >
+            Посмотреть
+          </a-button>
+          <a-popconfirm 
+            title="Вы уверены, что хотите удалить этот склад?" 
+            @confirm="onDeleteClick(record.id)"
+          >
+            <a-button type="primary" danger>
+              Удалить
+            </a-button>
+          </a-popconfirm>
+        </div>
+      </template>
+    </template>
+  </a-table>
 </template>
