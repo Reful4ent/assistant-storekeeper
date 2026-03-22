@@ -26,7 +26,7 @@ namespace assistant_storekeeper_backend.Services.CompanyWarehouses
             return companyWarehouse;
         }
 
-        public async Task<IEnumerable<CompanyWarehouse>> GetAllCompanyWarehouses(
+        public async Task<(IEnumerable<CompanyWarehouse> data, int total, int totalPages)> GetAllCompanyWarehouses(
             int? page, 
             int? pageSize, 
             string? search, 

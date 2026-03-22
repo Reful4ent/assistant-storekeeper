@@ -7,6 +7,7 @@ using assistant_storekeeper_backend.Exceptions;
 using assistant_storekeeper_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using System;
 
 namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
 {
@@ -27,7 +28,7 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<CompanyWarehouse>> GetAllCompanyWarehouses(
+        public async Task<(IEnumerable<CompanyWarehouse> data, int total, int totalPages)> GetAllCompanyWarehouses(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,
@@ -58,10 +59,14 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
                     : query.OrderByDescending(c => c.Id);
             }
 
-            return await query
+            var total = await query.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling((double)total / (pageSize ?? 10));
+            var data = await query
                 .Skip(((page ?? 1) - 1) * (pageSize ?? 10))
                 .Take(pageSize ?? 10)
                 .ToListAsync(cancellationToken);
+
+            return (data, total, totalPages);
         }
 
         public async Task<CompanyWarehouse> CreateCompanyWarehouse(CompanyWarehouse companyWarehouse, CancellationToken cancellationToken = default)

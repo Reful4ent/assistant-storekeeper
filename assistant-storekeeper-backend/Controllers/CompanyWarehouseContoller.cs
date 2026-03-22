@@ -6,6 +6,7 @@ using assistant_storekeeper_backend.DTOS.CompanyWarehouseDTOs;
 using AutoMapper;
 using assistant_storekeeper_backend.Mappers;
 using System.Collections.Generic;
+using assistant_storekeeper_backend.DTOS.PagedResultDTOs;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -37,7 +38,12 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy)
         {
             var companyWarehouses = await _companyWarehouseService.GetAllCompanyWarehouses(page, pageSize, search, isAscending, sortBy);
-            return Ok(_mapper.Map<IEnumerable<CompanyWarehouseDTO>>(companyWarehouses));
+            return Ok(new PagedResultDTO<CompanyWarehouseDTO>
+            {
+                Data = _mapper.Map<IEnumerable<CompanyWarehouseDTO>>(companyWarehouses.data),
+                Total = companyWarehouses.total,
+                TotalPages = companyWarehouses.totalPages,
+            });
         }
 
         [HttpPost]
