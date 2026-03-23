@@ -142,7 +142,7 @@
       <div style="padding: 8px">
         <a-input
           ref="searchInput"
-          :placeholder="`Search ${column.dataIndex}`"
+          :placeholder="`Поиск по названию`"
           :value="selectedKeys[0]"
           style="width: 188px; margin-bottom: 8px; display: block"
           @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
@@ -155,10 +155,10 @@
           @click="handleSearch(selectedKeys, confirm, column.dataIndex)"
         >
           <template #icon><SearchOutlined /></template>
-          Search
+          Поиск
         </a-button>
         <a-button size="small" style="width: 90px" @click="handleReset(clearFilters)">
-          Reset
+          Сбросить
         </a-button>
       </div>
     </template>

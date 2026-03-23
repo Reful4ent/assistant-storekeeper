@@ -27,7 +27,7 @@ namespace assistant_storekeeper_backend.Services.Nomenclatures
             return nomenclature;
         }
 
-        public async Task<IEnumerable<Nomenclature>> GetAllNomenclatures(
+        public async Task<(IEnumerable<Nomenclature> data, int total, int totalPages)> GetAllNomenclatures(
             int? page, 
             int? pageSize, 
             string? search, 
