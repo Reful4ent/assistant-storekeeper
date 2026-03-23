@@ -9,9 +9,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <a-breadcrumb>
-        <a-breadcrumb-item v-for="breadcrumb in breadcrumbs" :key="breadcrumb.route" class="mr-[16px]">
-            <RouterLink :to="breadcrumb.route">{{ breadcrumb.name }}</RouterLink>
+    <a-breadcrumb class="!mb-4">
+        <a-breadcrumb-item v-for="breadcrumb in breadcrumbs" :key="breadcrumb.route">
+            <RouterLink v-if="breadcrumb.route" :to="breadcrumb.route">{{ breadcrumb.title }}</RouterLink>
+            <span v-else>{{ breadcrumb.title }}</span>
         </a-breadcrumb-item>
     </a-breadcrumb>
 </template>
