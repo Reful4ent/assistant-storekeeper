@@ -29,7 +29,7 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Movement>> GetAllMovements(
+        public async Task<(IEnumerable<Movement> data, int total, int totalPages)> GetAllMovements(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,
@@ -80,10 +80,15 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                     : query.OrderByDescending(m => m.Id);
             }
 
-            return await query
+
+            var total = await query.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling((double)total / (pageSize ?? 10));
+            var data = await query
                 .Skip(((page ?? 1) - 1) * (pageSize ?? 10))
                 .Take(pageSize ?? 10)
                 .ToListAsync(cancellationToken);
+
+            return (data, total, totalPages);
         }
 
         public async Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default)

@@ -7,6 +7,7 @@ using AutoMapper;
 using System.Collections.Generic;
 using assistant_storekeeper_backend.DTOS.WarehouseStateRequestDTOs;
 using System.Threading;
+using assistant_storekeeper_backend.DTOS.PagedResultDTOs;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -38,7 +39,12 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy)
         {
             var movements = await _movementService.GetAllMovements(page, pageSize, search, isAscending, sortBy);
-            return Ok(_mapper.Map<List<MovementResponseDTO>>(movements));
+            return Ok(new PagedResultDTO<MovementResponseDTO>
+            {
+                Data = _mapper.Map<List<MovementResponseDTO>>(movements.data),
+                Total = movements.total,
+                TotalPages = movements.totalPages,
+            });
         }
 
         [HttpPost]

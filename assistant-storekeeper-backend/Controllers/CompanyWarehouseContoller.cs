@@ -40,7 +40,7 @@ namespace assistant_storekeeper_backend.Controllers
             var companyWarehouses = await _companyWarehouseService.GetAllCompanyWarehouses(page, pageSize, search, isAscending, sortBy);
             return Ok(new PagedResultDTO<CompanyWarehouseDTO>
             {
-                Data = _mapper.Map<IEnumerable<CompanyWarehouseDTO>>(companyWarehouses.data),
+                Data = _mapper.Map<List<CompanyWarehouseDTO>>(companyWarehouses.data),
                 Total = companyWarehouses.total,
                 TotalPages = companyWarehouses.totalPages,
             });

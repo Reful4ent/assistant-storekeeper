@@ -13,7 +13,7 @@ namespace assistant_storekeeper_backend.Services.Movements
     public interface IMovementService
     {
         Task<Movement?> GetMovementById(int id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<Movement>> GetAllMovements(
+        Task<(IEnumerable<Movement> data, int total, int totalPages)> GetAllMovements(
             int? page,
             int? pageSize,
             string? search,
