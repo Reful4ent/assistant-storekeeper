@@ -9,7 +9,7 @@ namespace assistant_storekeeper_backend.Repositories.CompanyWarehouses
     {
         Task<CompanyWarehouse?> GetCompanyWarehouseById(int id, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<CompanyWarehouse>> GetAllCompanyWarehouses(
+        Task<(IEnumerable<CompanyWarehouse> data, int total, int totalPages)> GetAllCompanyWarehouses(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,

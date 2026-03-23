@@ -73,6 +73,16 @@ namespace assistant_storekeeper_backend
             services.AddScoped<ICompanyWareHouseNomenclatureRepository, CompanyWareHouseNomenclatureRepository>();
             services.AddScoped<ICompanyWareHouseNomenclatureService, CompanyWareHouseNomenclatureService>();
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
+
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
@@ -86,10 +96,14 @@ namespace assistant_storekeeper_backend
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseHttpsRedirection();
+            else 
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

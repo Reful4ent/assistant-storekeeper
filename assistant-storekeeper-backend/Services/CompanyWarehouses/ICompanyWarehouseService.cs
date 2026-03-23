@@ -8,7 +8,7 @@ namespace assistant_storekeeper_backend.Services.CompanyWarehouses
     public interface ICompanyWarehouseService
     {
         Task<CompanyWarehouse> GetCompanyWarehouseById(int id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<CompanyWarehouse>> GetAllCompanyWarehouses(
+        Task<(IEnumerable<CompanyWarehouse> data, int total, int totalPages)> GetAllCompanyWarehouses(
             int? page, 
             int? pageSize, 
             string? search, 

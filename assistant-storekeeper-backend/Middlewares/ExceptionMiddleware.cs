@@ -79,6 +79,13 @@ namespace assistant_storekeeper_backend.Middlewares
                     await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = "Database update error" }));
                 }
             }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Relationship constraint violation");
+                context.Response.StatusCode = 400;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = "Relationship constraint violation" }));
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled error");

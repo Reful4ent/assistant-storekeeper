@@ -3,10 +3,10 @@
 </script>
 
 <template>
-    <div class="main-layout">
+    <a-layout>
         <Header />
-        <main>
+        <a-layout-content style="padding: 24px;">
             <router-view />
-        </main>
-    </div>
+        </a-layout-content>
+    </a-layout>
 </template>
