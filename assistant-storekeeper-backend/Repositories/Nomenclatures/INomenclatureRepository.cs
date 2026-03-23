@@ -8,7 +8,7 @@ namespace assistant_storekeeper_backend.Repositories.Nomenclatures
     public interface INomenclatureRepository
     {
         Task<Nomenclature?> GetNomenclatureById(int id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<Nomenclature>> GetAllNomenclatures(
+        Task<(IEnumerable<Nomenclature> data, int total, int totalPages)> GetAllNomenclatures(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,

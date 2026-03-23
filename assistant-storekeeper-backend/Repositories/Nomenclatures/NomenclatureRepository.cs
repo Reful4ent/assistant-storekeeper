@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using System;
 
 namespace assistant_storekeeper_backend.Repositories.Nomenclatures
 {
@@ -23,7 +24,7 @@ namespace assistant_storekeeper_backend.Repositories.Nomenclatures
             return await _context.Nomenclatures.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Nomenclature>> GetAllNomenclatures(
+        public async Task<(IEnumerable<Nomenclature> data, int total, int totalPages)> GetAllNomenclatures(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,
@@ -51,10 +52,14 @@ namespace assistant_storekeeper_backend.Repositories.Nomenclatures
                     : query.OrderByDescending(c => c.Id);
             }
 
-            return await query
+            var total = await query.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling((double)total / (pageSize ?? 10));
+            var data = await query
                 .Skip(((page ?? 1) - 1) * (pageSize ?? 10))
                 .Take(pageSize ?? 10)
                 .ToListAsync(cancellationToken);
+
+            return (data, total, totalPages);
         }
 
         public async Task<Nomenclature> CreateNomenclature(Nomenclature nomenclature, CancellationToken cancellationToken = default)

@@ -12,7 +12,7 @@
   const route = useRoute();
   const id = route.params.id;
 
-  const loading = ref(false);
+  const loading = ref(true);
   const form = reactive({ 
     name: '' 
   });
@@ -68,7 +68,6 @@
       if (response.status === 200) {
         form.name = response.data.name;
         nomenclatures.value = response.data.companyWarehouseNomenclatures;
-        console.log(nomenclatures.value);
         loadedNomenclatures = structuredClone(response.data.companyWarehouseNomenclatures);
       }
     } catch (error) {

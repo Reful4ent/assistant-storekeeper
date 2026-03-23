@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using assistant_storekeeper_backend.DTOS.NomenclatureDTOs;
 using System.Collections.Generic;
+using assistant_storekeeper_backend.DTOS.PagedResultDTOs;
 
 namespace assistant_storekeeper_backend.Controllers
 {
@@ -36,7 +37,12 @@ namespace assistant_storekeeper_backend.Controllers
             [FromQuery] string? sortBy)
         {
             var nomenclatures = await _nomenclatureService.GetAllNomenclatures(page, pageSize, search, isAscending, sortBy);
-            return Ok(_mapper.Map<List<NomenclatureDTO>>(nomenclatures));
+            return Ok(new PagedResultDTO<NomenclatureDTO> 
+            {
+                Data = _mapper.Map<List<NomenclatureDTO>>(nomenclatures.data),
+                Total = nomenclatures.total,
+                TotalPages = nomenclatures.totalPages
+            });
         }
 
         [HttpPost]
