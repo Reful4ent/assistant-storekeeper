@@ -99,6 +99,10 @@
     }
   }
 
+  const onShowStockByDateClick = () => {
+    router.push('/company-warehouses/warehouse-state');
+  }
+
   watch(() => route.query, (newQuery) => {
     pagination.value.current = parseInt(newQuery.page, 10) || 1;
     pagination.value.pageSize = parseInt(newQuery.pageSize, 10) || 10;
@@ -121,6 +125,9 @@
     <a-button type="primary"@click="onAddClick">
       Добавить склад
     </a-button>
+    <a-button type="primary" class="!bg-yellow-600" @click="onShowStockByDateClick">
+      Посмотреть остатки по дате
+    </a-button>
   </div>
   <a-table 
     bordered 
@@ -136,35 +143,6 @@
     }"
     @change="onTableChange"
   >
-    <template 
-        #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
-    >
-      <div style="padding: 8px">
-        <a-input
-          ref="searchInput"
-          :placeholder="`Поиск по названию`"
-          :value="selectedKeys[0]"
-          style="width: 188px; margin-bottom: 8px; display: block"
-          @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
-          @pressEnter="handleSearch(selectedKeys, confirm, column.dataIndex)"
-        />
-        <a-button
-          type="primary"
-          size="small"
-          style="width: 90px; margin-right: 8px"
-          @click="handleSearch(selectedKeys, confirm, column.dataIndex)"
-        >
-          <template #icon><SearchOutlined /></template>
-          Поиск
-        </a-button>
-        <a-button size="small" style="width: 90px" @click="handleReset(clearFilters)">
-          Сбросить
-        </a-button>
-      </div>
-    </template>
-    <template #customFilterIcon="{ filtered }">
-      <search-outlined :style="{ color: filtered ? '#108ee9' : undefined }" />
-    </template>
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'actions'">
         <div class="flex gap-2">
