@@ -5,8 +5,10 @@
     import { reactive, ref, onMounted, watch } from 'vue';
     import axios from 'axios';
     import { message } from 'ant-design-vue';
+    import { useRouter } from 'vue-router';
 
     const apiUrl = import.meta.env.VITE_API_URL;
+    const router = useRouter();
 
 
     const statusesOptions = statuses.map(status => ({
@@ -31,7 +33,7 @@
         companyWarehouseFromId: null,
         companyWarehouseToId: null,
         nomenclatures: [{
-            nomenclatureId: null,
+            id: null,
             quantity: null,
         }],
     });
@@ -72,13 +74,97 @@
         try {
             const response = await axios.get(apiUrl + '/api/company-warehouse-nomenclatures?companyWarehouseId=' + fromWarehouseId);
             nomenclaturesByFromWarehouseId.value = response.data;
-            console.log(nomenclaturesByFromWarehouseId.value);
             nomenclaturesByFromWarehouseIdOptions.value = response.data.map(nomenclature => ({
                 label: nomenclature.nomenclatureName,
                 value: nomenclature.id,
             }));
         } catch (error) {
             message.error('Не удалось получить товары!');
+        }
+    }
+
+    const addNomenclature = () => {
+        movement.nomenclatures.push({
+            id: null,
+            quantity: null,
+        });
+    }
+
+    const removeNomenclature = (index) => {
+        movement.nomenclatures.splice(index, 1);
+    }
+
+    const validateQuantity = (nomenclatureId) => {
+        return (rule, value, callback) => {
+            if (value < 1) {
+               return Promise.reject(new Error('Количество должно быть больше 0!'));
+            }
+            if (movement.status === 0) {
+                return Promise.resolve();
+            }
+            if (value > nomenclaturesByFromWarehouseId.value.find(nomenclature => nomenclature.id === nomenclatureId).quantity) {
+                return Promise.reject(new Error('Количество не может быть больше количества на складе!'));
+            }
+            return Promise.resolve();
+        }
+    }
+
+    const validateCompanyWarehouseSelectedId = (rule, value, callback) => {
+        if (movement.companyWarehouseFromId === movement.companyWarehouseToId) {
+            return Promise.reject(new Error('Склады не могут быть одинаковыми!'));
+        }
+        return Promise.resolve();
+    }
+
+    const validateSelectedNomenclature = (selectedNomenclature) => {
+        return (rule, value, callback) => {
+            const countOfSelectedNomenclature = movement.nomenclatures.reduce(
+                (acc, nomenclature) => acc + (nomenclature.id === selectedNomenclature.id ? 1 : 0), 
+                0
+            );
+            if (countOfSelectedNomenclature > 1) {
+                return Promise.reject(new Error('Товар уже выбран!'));
+            }
+            return Promise.resolve();
+        }
+    }
+
+    const getQuantityByNomenclatureId = (nomenclatureId) => {
+        return nomenclaturesByFromWarehouseId.value.find(nomenclature => nomenclature.id === nomenclatureId)?.quantity;
+    }
+
+    const getNomenclaturesOptions = () => {
+        return movement.status === 0 ? allNomenclaturesOptions.value : nomenclaturesByFromWarehouseIdOptions.value;
+    }
+
+    const onFinish = async (values) => {
+        submitLoading.value = true;
+        let resultedNomenclatures;
+        if (movement.status === 0) {
+            resultedNomenclatures = values.nomenclatures
+        } else {
+            resultedNomenclatures = values.nomenclatures.map(selectedNomenclature => ({
+                id: nomenclaturesByFromWarehouseId.value.find(nomenclature => nomenclature.id === selectedNomenclature.id).nomenclatureId,
+                quantity: selectedNomenclature.quantity,
+            }));
+        }
+
+        try {
+            values = {
+                ...values,
+                nomenclatures: resultedNomenclatures,
+            }
+            const response = await axios.post(apiUrl + '/api/movements', values);
+            if (response.status === 201) {
+            message.success('Перемещение успешно создано!');
+                submitLoading.value = false;
+                router.push('/movements');
+            }
+        } catch (error) {
+            message.error('Не удалось создать перемещение!');
+        }
+        finally {
+            submitLoading.value = false;
         }
     }
 
@@ -95,7 +181,7 @@
     watch(() => movement.status, async (newStatus) => {
         if (newStatus) {
             movement.nomenclatures = [{
-            nomenclatureId: null,
+            id: null,
             quantity: null,
         }];
             movement.companyWarehouseFromId = null;
@@ -103,43 +189,6 @@
         }
     });
 
-    const onFinish = async (values) => {
-        console.log(values);
-    }
-
-    const addNomenclature = () => {
-        movement.nomenclatures.push({
-            nomenclatureId: null,
-            quantity: null,
-        });
-    }
-
-    const removeNomenclature = (index) => {
-        movement.nomenclatures.splice(index, 1);
-    }
-
-    const validateQuantity = (nomenclatureId) => {
-        return (rule, value, callback) => {
-            if (value < 1) {
-                callback(new Error('Количество должно быть больше 0!'));
-                return;
-            }
-            if (movement.status === 0) {
-                callback();
-                return;
-            }
-            if (value > nomenclaturesByFromWarehouseId.value.find(nomenclature => nomenclature.id === nomenclatureId).quantity) {
-                callback(new Error('Количество не может быть больше количества на складе!'));
-                return;
-            }
-            callback();
-            return;
-        }
-    }
-
-    const createMovement = async () => {
-        console.log(movement);
-    }
 
     onMounted(async () => {
         await getCompanyWarehouses();
@@ -166,7 +215,7 @@
                 v-if="movement.status === 1 || movement.status === 2"
                 label="Склад отправления"
                 name="companyWarehouseFromId"
-                :rules="[{ required: true, message: 'Выберите склад отправления!' }]"
+                :rules="[{ required: true, message: 'Выберите склад отправления!' }, { validator: validateCompanyWarehouseSelectedId }]"
             >
                 <a-select 
                     v-model:value="movement.companyWarehouseFromId" 
@@ -177,7 +226,7 @@
                 v-if="movement.status === 0 || movement.status === 2"
                 label="Склад назначения"
                 name="companyWarehouseToId"
-                :rules="[{ required: true, message: 'Выберите склад назначения!' }]"
+                :rules="[{ required: true, message: 'Выберите склад назначения!' }, { validator: validateCompanyWarehouseSelectedId }]"
             >
                 <a-select 
                     v-model:value="movement.companyWarehouseToId" 
@@ -208,25 +257,25 @@
                         </template>
                         <a-form-item 
                             label="Товар" 
-                            :name="['nomenclatures', index, 'nomenclatureId']" 
-                            :rules="[{ required: true, message: 'Выберите товар!' }]"
+                            :name="['nomenclatures', index, 'id']" 
+                            :rules="[{ required: true, message: 'Выберите товар!' }, { validator: validateSelectedNomenclature(nomenclature) }]"
                         >
                             <a-select 
-                                v-model:value="nomenclature.nomenclatureId"
-                                :options="movement.status === 0 ? allNomenclaturesOptions : nomenclaturesByFromWarehouseIdOptions"
+                                v-model:value="nomenclature.id"
+                                :options="getNomenclaturesOptions()"
                             />
                         </a-form-item>
                         <a-form-item 
                             label="Количество" 
                             :name="['nomenclatures', index, 'quantity']"
-                            :rules="[{ required: true, message: 'Введите количество!' }, { validator: validateQuantity(nomenclature.nomenclatureId) }]"
+                            :rules="[{ required: true, message: 'Введите количество!' }, { validator: validateQuantity(nomenclature.id) }]"
                             class="w-full [&_.ant-form-item-control-input-content]:block [&_.ant-form-item-control-input-content]:w-full [&_.ant-input-number]:!w-full"
                         >
                             <a-input-number v-model:value="nomenclature.quantity" class="w-full" type="number" />
                         </a-form-item>
                         <div class="flex justify-start" v-if="movement.status !== 0">
                             <span class="text-blue-500 font-bold">
-                                    На складе: {{ nomenclaturesByFromWarehouseId.find(value => value.id == nomenclature.nomenclatureId)?.quantity }} шт.
+                                    На складе: {{ getQuantityByNomenclatureId(nomenclature.id) }} шт.
                             </span>
                         </div>
                     </a-card>
@@ -240,7 +289,9 @@
                     </a-button>
                 </div>
             </a-form-item>
-            <a-form-item class="[&_.ant-form-item-control-input-content]:flex [&_.ant-form-item-control-input-content]:justify-end [&_.ant-form-item-control-input-content]:w-full">
+            <a-form-item 
+                class="[&_.ant-form-item-control-input-content]:flex [&_.ant-form-item-control-input-content]:justify-end [&_.ant-form-item-control-input-content]:w-full"
+            >
                 <a-button 
                     type="primary" 
                     html-type="submit" 

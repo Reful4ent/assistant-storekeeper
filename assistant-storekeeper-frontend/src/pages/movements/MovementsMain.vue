@@ -13,8 +13,8 @@
   const loading = ref(true);
 
   const search = ref(route.query.search || '');
-  const sortField = ref(route.query.sortBy || 'Id');
-  const sortOrder = ref(route.query.isAscending === 'false' ? 'descend' : 'ascend');
+  const sortField = ref(route.query.sortBy || 'Date');
+  const sortOrder = ref(route.query.isAscending === 'true' ? 'ascend' : 'descend');
   const pagination = ref({
     current: parseInt(route.query.page) || 1,
     pageSize: parseInt(route.query.pageSize) || 10,
@@ -65,7 +65,7 @@
     pagination.value.pageSize = paginationTable.pageSize;
     if (sorter.field) {
       if (typeof sorter.order === 'undefined') {
-        sortField.value = 'Id';
+        sortField.value = 'Date';
         sortOrder.value = 'ascend';
       } else {
         sortField.value = sorter.field;
@@ -101,8 +101,8 @@
     pagination.value.current = parseInt(newQuery.page, 10) || 1;
     pagination.value.pageSize = parseInt(newQuery.pageSize, 10) || 10;
     search.value = newQuery.search || '';
-    sortField.value = newQuery.sortBy || 'Id';
-    sortOrder.value = newQuery.isAscending === 'false' ? 'descend' : 'ascend';
+    sortField.value = newQuery.sortBy || 'Date';
+    sortOrder.value = newQuery.isAscending === 'true' ? 'ascend' : 'descend';
     getMovements();
   }, { immediate: true })
 </script>

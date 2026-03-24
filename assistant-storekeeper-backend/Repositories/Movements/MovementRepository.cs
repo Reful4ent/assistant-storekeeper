@@ -61,11 +61,11 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                     ? query.OrderBy(m => m.CompanyWarehouseTo.Name) 
                     : query.OrderByDescending(m => m.CompanyWarehouseTo.Name);
             }
-            else if(sortBy == "Date")
+            else if(sortBy == "Id")
             {
                 query = isAscending == true 
-                ? query.OrderBy(m => m.Date) 
-                : query.OrderByDescending(m => m.Date);
+                ? query.OrderBy(m => m.Id) 
+                : query.OrderByDescending(m => m.Id);
             }
             else if(sortBy == "Status")
             {
@@ -75,9 +75,9 @@ namespace assistant_storekeeper_backend.Repositories.Movements
             }
             else
             {
-                query = isAscending == true 
-                    ? query.OrderBy(m => m.Id) 
-                    : query.OrderByDescending(m => m.Id);
+                query = isAscending == false 
+                    ? query.OrderByDescending(m => m.Date) 
+                    : query.OrderBy(m => m.Date);
             }
 
 
