@@ -29,7 +29,7 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Movement>> GetAllMovements(
+        public async Task<(IEnumerable<Movement> data, int total, int totalPages)> GetAllMovements(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,
@@ -61,11 +61,11 @@ namespace assistant_storekeeper_backend.Repositories.Movements
                     ? query.OrderBy(m => m.CompanyWarehouseTo.Name) 
                     : query.OrderByDescending(m => m.CompanyWarehouseTo.Name);
             }
-            else if(sortBy == "Date")
+            else if(sortBy == "Id")
             {
                 query = isAscending == true 
-                ? query.OrderBy(m => m.Date) 
-                : query.OrderByDescending(m => m.Date);
+                ? query.OrderBy(m => m.Id) 
+                : query.OrderByDescending(m => m.Id);
             }
             else if(sortBy == "Status")
             {
@@ -75,15 +75,20 @@ namespace assistant_storekeeper_backend.Repositories.Movements
             }
             else
             {
-                query = isAscending == true 
-                    ? query.OrderBy(m => m.Id) 
-                    : query.OrderByDescending(m => m.Id);
+                query = isAscending == false 
+                    ? query.OrderByDescending(m => m.Date) 
+                    : query.OrderBy(m => m.Date);
             }
 
-            return await query
+
+            var total = await query.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling((double)total / (pageSize ?? 10));
+            var data = await query
                 .Skip(((page ?? 1) - 1) * (pageSize ?? 10))
                 .Take(pageSize ?? 10)
                 .ToListAsync(cancellationToken);
+
+            return (data, total, totalPages);
         }
 
         public async Task<Movement> CreateMovement(Movement movement, CancellationToken cancellationToken = default)

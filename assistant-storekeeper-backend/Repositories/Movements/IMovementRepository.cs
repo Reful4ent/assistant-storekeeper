@@ -10,7 +10,7 @@ namespace assistant_storekeeper_backend.Repositories.Movements
     public interface IMovementRepository
     {
         Task<Movement?> GetMovementById(int id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<Movement>> GetAllMovements(
+        Task<(IEnumerable<Movement> data, int total, int totalPages)> GetAllMovements(
             int? page = 1,
             int? pageSize = 10,
             string? search = null,

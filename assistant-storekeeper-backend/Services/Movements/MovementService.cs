@@ -46,7 +46,7 @@ namespace assistant_storekeeper_backend.Services.Movements
             return movement;
         }
 
-        public async Task<IEnumerable<Movement>> GetAllMovements(
+        public async Task<(IEnumerable<Movement> data, int total, int totalPages)> GetAllMovements(
             int? page,
             int? pageSize,
             string? search,
