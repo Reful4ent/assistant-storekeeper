@@ -1,0 +1,10 @@
+bin/
+obj/
+build/
+publish/
+release/
+dist/
+build/
+publish/
+release/
+dist/

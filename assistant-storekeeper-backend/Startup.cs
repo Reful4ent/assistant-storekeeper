@@ -10,7 +10,25 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using assistant_storekeeper_backend.Data;
+using assistant_storekeeper_backend.Repositories.CompanyWarehouses;
+using assistant_storekeeper_backend.Services.CompanyWarehouses;
+using assistant_storekeeper_backend.Middlewares;
+using assistant_storekeeper_backend.Repositories.Nomenclatures;
+using assistant_storekeeper_backend.Services.Nomenclatures;
+using assistant_storekeeper_backend.Repositories.Movements;
+using assistant_storekeeper_backend.Services.Movements;
+using assistant_storekeeper_backend.Repositories.MovementNomenclatures;
+using assistant_storekeeper_backend.Services.MovementNomenclatures;
+using assistant_storekeeper_backend.Repositories.CompanyWareHouseNomenclatures;
+using assistant_storekeeper_backend.Services.CompanyWareHouseNomenclatures;
+using assistant_storekeeper_backend.Mappers;
+using AutoMapper;
+using assistant_storekeeper_backend.DTOS.MovementDTOs;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseNomenclatureDTOs;
+using assistant_storekeeper_backend.DTOS.CompanyWarehouseDTOs;
+
 
 namespace assistant_storekeeper_backend
 {
@@ -26,9 +44,49 @@ namespace assistant_storekeeper_backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+            string port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
+            string dbName = Environment.GetEnvironmentVariable("POSTGRES_DATABASE");
+            string user = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
+            string pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+            string connectionString = $"Host={host};Port={port};Database={dbName};Username={user};Password={pass}";
+
+            services.AddAutoMapper
+            (
+                (cfg) => { }, 
+                typeof(NomenclatureMapper), 
+                typeof(MovementNomenclatureMapper),
+                typeof(MovementMapper),
+                typeof(CompanyWarehouseNomenclatureMapper),
+                typeof(CompanyWarehouseMapper)
+            );
+
+
+            services.AddScoped<ICompanyWarehouseRepository, CompanyWarehouseRepository>();
+            services.AddScoped<ICompanyWarehouseService, CompanyWarehouseService>();
+            services.AddScoped<INomenclatureRepository, NomenclatureRepository>();
+            services.AddScoped<INomenclatureService, NomenclatureService>();
+            services.AddScoped<IMovementRepository, MovementRepository>();
+            services.AddScoped<IMovementService, MovementService>();
+            services.AddScoped<IMovementNomenclatureRepository, MovementNomenclatureRepository>();
+            services.AddScoped<IMovementNomenclatureService, MovementNomenclatureService>();
+            services.AddScoped<ICompanyWareHouseNomenclatureRepository, CompanyWareHouseNomenclatureRepository>();
+            services.AddScoped<ICompanyWareHouseNomenclatureService, CompanyWareHouseNomenclatureService>();
+
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
+
             services.AddControllers();
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(connectionString));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,12 +96,18 @@ namespace assistant_storekeeper_backend
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseHttpsRedirection();
+            else 
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseRouting();
 
+            app.UseCors();
+
             app.UseAuthorization();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
